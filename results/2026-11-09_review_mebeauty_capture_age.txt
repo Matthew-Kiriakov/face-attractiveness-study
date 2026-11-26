@@ -1,0 +1,12 @@
+=== A. capture-only SCUT models (4 image statistics) -> MEBeauty folds 1-4, Pearson inside groups
+  boosting: mean of four primary +0.004 [-0.061, +0.068]; per group caucasian_female -0.078, caucasian_male -0.057, asian_female +0.081, asian_male +0.072
+  ridge: mean of four primary +0.034 [-0.034, +0.101]; per group caucasian_female -0.027, caucasian_male -0.019, asian_female +0.111, asian_male +0.071
+  (tier 2 transfer for reference: boosting 0.331, ridge 0.286)
+  within SCUT, capture-only pooled r in the non-lockbox sample for reference is in results 2026-10-25_frame_quality (different feature list)
+
+=== B. perceived age on 1968 MEBeauty faces: mean 33.4, SD 12.1, share under 18 estimated: 0.4 %
+  Pearson of age with the label inside the primary groups: caucasian_female -0.611, caucasian_male -0.482, asian_female -0.555, asian_male -0.395
+  boosting: plain mean of four 0.331 [0.261, 0.398] -> partial given age 0.216 [0.152, 0.290]; per group partial caucasian_female +0.166, caucasian_male +0.187, asian_female +0.270, asian_male +0.241
+  ridge: plain mean of four 0.286 [0.216, 0.352] -> partial given age 0.146 [0.071, 0.215]; per group partial caucasian_female +0.166, caucasian_male +0.137, asian_female +0.181, asian_male +0.099
+
+Not done: embedding-only (DINOv2) transfer to MEBeauty.

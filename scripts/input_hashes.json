@@ -1,0 +1,35 @@
+{
+ "inputs": {
+  "data/scut_cm_harmony.csv": "03fd9dcb26cdfc84d516d2f1ac8f75e261c17150c870ffd5423ee4e4b626d29f",
+  "data/scut_am_harmony.csv": "ecc476279e6c4919d75831e16d45ae3aedeb7f95e8e3a978fbfc0b031d136f5d",
+  "data/scut_cf_harmony.csv": "e30b230158666bc795eb34254af4a4bf9cf4139a81e8421c8f79c72c7407b22a",
+  "data/scut_af_harmony.csv": "b8669ce22d4e5f5037525fda20e08245373bcb645a94148f116c1902210b1357",
+  "data/scut_cm_quality.csv": "362650714e85787000bd342684f6c3abc56a88abe97ac838624d4d1b42a8198e",
+  "data/scut_cm_source.csv": "aa9d963490fb72244957f32dcd6722fb4846c429ac84061afb0f77889f15b3e8",
+  "data/scut_age_mesh_all.csv": "2a6fa62297eac6e7d0f0436b797710a3812ab8ce7fe1a637fd4d2a69ae8408f2",
+  "data/lockbox.csv": "ee4f5fd6d923898d716c5c2857c86bc16951ec75b0d8db1f9c61e0c52a274e50",
+  "data/scut_colour_features.csv": "49d339362f3bba18dfef413465d4831850a3926adecfbc907cabb12418537139",
+  "data/scut_block2b_features.csv": "fff36d60812cfd6e323791672e63af82833e984ac5f0cfa33026006c7aab3588",
+  "data/scut_block2c_features.csv": "55e54cbae5d73f9d9bd79d7f91d9ac8fd107a210f9d96be71e6e402acbb07016",
+  "data/scut_block3_symmetry.csv": "aa56fc970c6f94c1f6c1299ee55ee00db4618c7e84e6d94903503d523492634f",
+  "data/scut_block5_dimorphism.csv": "c915b4ae96f75a91192353eb6a6c4f80e02fd3b31f3f5736944c96ee75bcdce8",
+  "data/scut_block6_angularity.csv": "936ab2693bad182722afa55d0453faeeb96953a8036db1b3fb10f409fed2af25",
+  "data/scut_embedding.npz": "0d9537bafc363a31d1b9fd3c925093382da6e933fc3be35cdd086ac3c1d11e4e",
+  "data/scut-fbp5500/SCUT-FBP5500_v2/All_Ratings.xlsx": "220de727889725ed186fb8994962d35eb69cc0040e16f30ee82ab11c8eb7c797",
+  "data/external/mebeauty/mebeauty_features.csv": "74df0f985adc0e5ac0f41741b28e84b851ef9723c8dc77a7d5198b735a00bb3d",
+  "data/external/mebeauty/mebeauty_flags.csv": "a9092a845039288a72c8e044acd17444603a65733d269122759742acd5ab51e0",
+  "data/external/mebeauty/mebeauty_landmarks_web.jsonl": "0b2325137489f87993cb3e329602b01146a1760abf1bac85810578ab379225fc",
+  "data/external/mebeauty/fbp_extended/test-00000-of-00001.parquet": "ab49e7c2e1f44d672d8fc2d94dfb1bb011e852432204cc4ab39afd3e2a79cc25",
+  "data/external/mebeauty/fbp_extended/train-00000-of-00003.parquet": "b49967b1e6170c0a6c288fc770ce7868d62ebe2327a75a296061881fe33f30ad",
+  "data/external/mebeauty/fbp_extended/train-00001-of-00003.parquet": "b9d2050111a331ba283d2c0278c590390abc93da0fb881432e266a339d978a26",
+  "data/external/mebeauty/fbp_extended/train-00002-of-00003.parquet": "57ea1946cbc758c1131522f045d5ed42634fee272046ca0a6516487506dadb4e",
+  "data/external/mebeauty/fbp_extended/validation-00000-of-00001.parquet": "a05e951782392bcd5c57b7d02ff5d570e035a845e314c5996e68365ecc4d3f0d"
+ },
+ "versions": {
+  "python": "3.14.4",
+  "numpy": "2.5.1",
+  "pandas": "3.0.2",
+  "scipy": "1.17.1",
+  "sklearn": "1.8.0"
+ }
+}

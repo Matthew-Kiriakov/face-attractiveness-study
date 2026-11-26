@@ -1,0 +1,95 @@
+B: train SCUT 3737 + MEBeauty 1968; test fold 0: 492 faces
+
+B and A on the test fold (n = 492)
+  A_boosting
+    caucasian_female   n  108 primary Pearson +0.218 [+0.034, +0.379] Spearman +0.167 R2 -0.018 transfers
+    caucasian_male     n   86 primary Pearson +0.160 [-0.022, +0.345] Spearman +0.186 R2 -0.158 not decidable
+    asian_female       n   38 primary Pearson +0.290 [+0.036, +0.665] Spearman +0.407 R2 -0.047 transfers
+    asian_male         n   29 primary Pearson +0.678 [+0.381, +0.868] Spearman +0.721 R2 +0.436 transfers
+    black_female       n   29 other   Pearson +0.534 [+0.205, +0.783] Spearman +0.591 R2 +0.272
+    black_male         n   28 other   Pearson +0.268 [+0.010, +0.552] Spearman +0.319 R2 -0.122
+    hispanic_female    n   29 other   Pearson +0.142 [-0.075, +0.375] Spearman +0.109 R2 -0.201
+    hispanic_male      n   30 other   Pearson +0.515 [+0.094, +0.782] Spearman +0.411 R2 +0.228
+    indian_female      n   28 other   Pearson +0.585 [+0.259, +0.784] Spearman +0.485 R2 +0.256
+    indian_male        n   30 other   Pearson +0.325 [-0.020, +0.604] Spearman +0.182 R2 -0.025
+    mideastern_female  n   28 other   Pearson +0.461 [+0.146, +0.815] Spearman +0.582 R2 +0.185
+    mideastern_male    n   29 other   Pearson +0.432 [+0.224, +0.641] Spearman +0.464 R2 +0.155
+    mean of four primary 0.337; transfers False; useful True; claim 71 downgraded: False (failed groups [])
+    companion 'transfers (pooled)': r over the 261 primary faces with prediction centred inside group +0.263 [+0.156, +0.366]; lower bound above 0: True
+  A_ridge
+    caucasian_female   n  108 primary Pearson +0.169 [-0.022, +0.343] Spearman +0.084 R2 -0.121
+    caucasian_male     n   86 primary Pearson +0.142 [-0.039, +0.325] Spearman +0.150 R2 -0.252
+    asian_female       n   38 primary Pearson +0.308 [+0.022, +0.622] Spearman +0.368 R2 -0.128
+    asian_male         n   29 primary Pearson +0.666 [+0.345, +0.863] Spearman +0.713 R2 +0.430
+    black_female       n   29 other   Pearson +0.416 [+0.119, +0.728] Spearman +0.567 R2 +0.080
+    black_male         n   28 other   Pearson +0.243 [+0.007, +0.521] Spearman +0.338 R2 -0.339
+    hispanic_female    n   29 other   Pearson +0.186 [-0.062, +0.391] Spearman +0.164 R2 -0.258
+    hispanic_male      n   30 other   Pearson +0.603 [+0.259, +0.807] Spearman +0.512 R2 +0.347
+    indian_female      n   28 other   Pearson +0.544 [+0.189, +0.770] Spearman +0.560 R2 +0.282
+    indian_male        n   30 other   Pearson +0.292 [-0.100, +0.641] Spearman +0.258 R2 -0.217
+    mideastern_female  n   28 other   Pearson +0.334 [+0.040, +0.642] Spearman +0.339 R2 +0.020
+    mideastern_male    n   29 other   Pearson +0.439 [+0.100, +0.673] Spearman +0.394 R2 -0.052
+    mean of four primary 0.321 (the registered words are read from A_boosting only)
+    pooled r, no registered word: 'transfers (pooled)': r over the 261 primary faces with prediction centred inside group +0.236 [+0.114, +0.348]; lower bound above 0: True
+  B_boosting
+    caucasian_female   n  108 primary Pearson +0.306 [+0.119, +0.491] Spearman +0.235 R2 +0.084
+    caucasian_male     n   86 primary Pearson +0.307 [+0.107, +0.483] Spearman +0.345 R2 +0.053
+    asian_female       n   38 primary Pearson +0.412 [+0.127, +0.741] Spearman +0.483 R2 +0.152
+    asian_male         n   29 primary Pearson +0.698 [+0.391, +0.886] Spearman +0.641 R2 +0.460
+    black_female       n   29 other   Pearson +0.563 [+0.291, +0.770] Spearman +0.600 R2 +0.277
+    black_male         n   28 other   Pearson +0.253 [-0.015, +0.518] Spearman +0.327 R2 -0.007
+    hispanic_female    n   29 other   Pearson +0.212 [-0.087, +0.471] Spearman +0.139 R2 -0.041
+    hispanic_male      n   30 other   Pearson +0.598 [+0.142, +0.811] Spearman +0.408 R2 +0.301
+    indian_female      n   28 other   Pearson +0.656 [+0.314, +0.836] Spearman +0.609 R2 +0.308
+    indian_male        n   30 other   Pearson +0.342 [-0.081, +0.672] Spearman +0.279 R2 +0.100
+    mideastern_female  n   28 other   Pearson +0.477 [+0.209, +0.736] Spearman +0.572 R2 +0.221
+    mideastern_male    n   29 other   Pearson +0.441 [+0.125, +0.653] Spearman +0.299 R2 +0.146
+    mean of four primary 0.431 (the registered words are read from A_boosting only)
+    pooled r, no registered word: 'transfers (pooled)': r over the 261 primary faces with prediction centred inside group +0.372 [+0.256, +0.479]; lower bound above 0: True
+  B_ridge
+    caucasian_female   n  108 primary Pearson +0.230 [+0.038, +0.422] Spearman +0.184 R2 +0.006
+    caucasian_male     n   86 primary Pearson +0.239 [+0.044, +0.400] Spearman +0.240 R2 -0.024
+    asian_female       n   38 primary Pearson +0.468 [+0.221, +0.735] Spearman +0.522 R2 +0.207
+    asian_male         n   29 primary Pearson +0.754 [+0.523, +0.916] Spearman +0.754 R2 +0.492
+    black_female       n   29 other   Pearson +0.408 [+0.140, +0.707] Spearman +0.514 R2 +0.156
+    black_male         n   28 other   Pearson +0.209 [-0.033, +0.486] Spearman +0.332 R2 -0.098
+    hispanic_female    n   29 other   Pearson +0.319 [+0.087, +0.505] Spearman +0.276 R2 +0.050
+    hispanic_male      n   30 other   Pearson +0.601 [+0.221, +0.791] Spearman +0.445 R2 +0.323
+    indian_female      n   28 other   Pearson +0.679 [+0.395, +0.842] Spearman +0.657 R2 +0.361
+    indian_male        n   30 other   Pearson +0.515 [+0.143, +0.780] Spearman +0.452 R2 +0.259
+    mideastern_female  n   28 other   Pearson +0.464 [+0.174, +0.731] Spearman +0.557 R2 +0.215
+    mideastern_male    n   29 other   Pearson +0.527 [+0.214, +0.719] Spearman +0.437 R2 +0.205
+    mean of four primary 0.423 (the registered words are read from A_boosting only)
+    pooled r, no registered word: 'transfers (pooled)': r over the 261 primary faces with prediction centred inside group +0.333 [+0.206, +0.447]; lower bound above 0: True
+
+pooling helps: B - A mean of four (boosting) +0.094 [+0.034, +0.146]; word met: True
+
+B without flagged faces (n = 353)
+  B_boosting
+    caucasian_female   n   81 primary Pearson +0.327 [+0.080, +0.531] Spearman +0.236 R2 +0.082
+    caucasian_male     n   65 primary Pearson +0.372 [+0.163, +0.575] Spearman +0.398 R2 +0.127
+    asian_female       n   25 primary Pearson +0.523 [+0.247, +0.745] Spearman +0.552 R2 +0.221
+    asian_male         n   20 primary Pearson +0.757 [+0.472, +0.922] Spearman +0.788 R2 +0.517
+    hispanic_male      n   26 other   Pearson +0.583 [-0.039, +0.822] Spearman +0.295 R2 +0.320
+    indian_female      n   22 other   Pearson +0.716 [+0.305, +0.886] Spearman +0.649 R2 +0.304
+    indian_male        n   25 other   Pearson +0.392 [-0.010, +0.739] Spearman +0.342 R2 +0.130
+    mideastern_male    n   20 other   Pearson +0.338 [-0.001, +0.627] Spearman +0.314 R2 +0.075
+    mean of four primary 0.495 (the registered words are read from A_boosting only)
+    pooled r, no registered word: 'transfers (pooled)': r over the 191 primary faces with prediction centred inside group +0.406 [+0.271, +0.534]; lower bound above 0: True
+  B_ridge
+    caucasian_female   n   81 primary Pearson +0.212 [-0.035, +0.430] Spearman +0.146 R2 -0.024
+    caucasian_male     n   65 primary Pearson +0.270 [+0.064, +0.465] Spearman +0.286 R2 +0.005
+    asian_female       n   25 primary Pearson +0.628 [+0.385, +0.782] Spearman +0.695 R2 +0.349
+    asian_male         n   20 primary Pearson +0.842 [+0.703, +0.939] Spearman +0.860 R2 +0.611
+    hispanic_male      n   26 other   Pearson +0.554 [+0.028, +0.802] Spearman +0.339 R2 +0.263
+    indian_female      n   22 other   Pearson +0.750 [+0.408, +0.893] Spearman +0.685 R2 +0.381
+    indian_male        n   25 other   Pearson +0.499 [+0.015, +0.776] Spearman +0.417 R2 +0.230
+    mideastern_male    n   20 other   Pearson +0.435 [+0.113, +0.722] Spearman +0.448 R2 +0.154
+    mean of four primary 0.488 (the registered words are read from A_boosting only)
+    pooled r, no registered word: 'transfers (pooled)': r over the 191 primary faces with prediction centred inside group +0.341 [+0.208, +0.482]; lower bound above 0: True
+
+partial given perceived age, B_boosting: mean of four 0.335 (per group caucasian_female +0.167, caucasian_male +0.217, asian_female +0.323, asian_male +0.634)
+
+partial given perceived age, B_ridge: mean of four 0.329 (per group caucasian_female +0.072, caucasian_male +0.143, asian_female +0.387, asian_male +0.715)
+
+done (B is finished; it is not repeated)

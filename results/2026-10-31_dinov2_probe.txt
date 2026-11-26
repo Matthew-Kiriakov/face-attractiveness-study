@@ -1,0 +1,14 @@
+excluded as degenerate landmarks (feature > 50 IQR from median): AF ['[image ID removed]']
+n = 3737, embedding columns 1536, tier 2 columns 70
+tier 2 boosting (main)             R2 0.4829  pooled r 0.698 | CM10 0.64 AMDa 0.65 AMin 0.80 CF10 0.62 AFin 0.77 AFDa 0.71
+tier 2 ridge                       R2 0.4648  pooled r 0.682 | CM10 0.57 AMDa 0.62 AMin 0.78 CF10 0.59 AFin 0.76 AFDa 0.72
+E (DINOv2 only)                    R2 0.6348  pooled r 0.797 | CM10 0.75 AMDa 0.72 AMin 0.87 CF10 0.77 AFin 0.86 AFDa 0.83
+E + tier 2, one ridge              R2 0.6713  pooled r 0.819 | CM10 0.77 AMDa 0.77 AMin 0.89 CF10 0.78 AFin 0.88 AFDa 0.85
+blend: mean(tier-2 boosting, E)    R2 0.6351  pooled r 0.812 | CM10 0.76 AMDa 0.76 AMin 0.88 CF10 0.77 AFin 0.87 AFDa 0.84
+
+E minus tier-2 boosting:      +0.1519 (sd over seeds 0.0028) [+0.1267, +0.1737]
+E minus tier-2 ridge:         +0.1700 (sd over seeds 0.0014) [+0.1489, +0.1936]
+E + T minus E:                +0.0365 (sd over seeds 0.0005) [+0.0312, +0.0427]
+E + T minus tier-2 ridge:     +0.2065 (sd over seeds 0.0013) [+0.1872, +0.2300]
+blend minus tier-2 boosting:  +0.1522 (sd over seeds 0.0014) [+0.1352, +0.1622]
+done

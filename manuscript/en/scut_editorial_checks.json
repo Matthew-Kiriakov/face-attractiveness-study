@@ -1,0 +1,40 @@
+{
+  "scut": {
+    "n": 1196,
+    "pooled_z": 0.6720000377135817,
+    "pooled_centered_z": 0.6738537221036559,
+    "pooled_centered_rescaled": 0.700171415555479,
+    "pooled_1_to_5": 0.8235652715461416,
+    "macro_r": 0.6779770329103766,
+    "group_mean_pooled_r": 0.60793102853438
+  },
+  "development": {
+    "n": 4124,
+    "set_counts": {
+      "AM DataTang": 1006,
+      "AF internet": 783,
+      "AF DataTang": 632,
+      "AM internet": 488,
+      "CM 10k_US": 448,
+      "CF 10k_US": 380,
+      "CF internet": 183,
+      "CM internet": 114,
+      "AF lab": 61,
+      "AF GuangZhou": 22,
+      "AM lab": 6,
+      "AF none": 1
+    },
+    "five_fold": {
+      "group": {
+        "r": 0.13245702381560626,
+        "r2": 0.01742261441056181,
+        "fallback_to_sheet_mean": 0
+      },
+      "setname": {
+        "r": 0.6569566610151932,
+        "r2": 0.4315881301605001,
+        "fallback_to_sheet_mean": 1
+      }
+    }
+  }
+}

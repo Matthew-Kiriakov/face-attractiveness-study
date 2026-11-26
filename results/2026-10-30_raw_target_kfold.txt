@@ -1,0 +1,22 @@
+excluded as degenerate landmarks (feature > 50 IQR from median): AF ['[image ID removed]']
+excluded as degenerate landmarks (feature > 50 IQR from median): AF ['[image ID removed]']
+n=3737; raw rating mean 2.92 sd 0.66; between-set share of raw variance 0.347
+set means: CM 10k_US 2.76 (n=448), AM DataTang 2.56 (n=1006), AM internet 3.50 (n=488), CF 10k_US 2.75 (n=380), AF internet 3.42 (n=783), AF DataTang 2.64 (n=632)
+геометрия z (42)     boosting (a) z-цель, без набора     pooled r 0.632 R2 0.397 | inside sets: CM10 0.60 AMDa 0.57 AMin 0.74 CF10 0.56 AFin 0.71 AFDa 0.62
+геометрия z (42)     boosting (b) сырая цель, без набора pooled r 0.603 R2 0.357 | inside sets: CM10 0.59 AMDa 0.55 AMin 0.74 CF10 0.55 AFin 0.69 AFDa 0.59
+геометрия z (42)     boosting (c) сырая цель + набор     pooled r 0.799 R2 0.637 | inside sets: CM10 0.59 AMDa 0.57 AMin 0.74 CF10 0.56 AFin 0.71 AFDa 0.64
+геометрия z (42)     ridge    (a) z-цель, без набора     pooled r 0.604 R2 0.365 | inside sets: CM10 0.51 AMDa 0.55 AMin 0.71 CF10 0.48 AFin 0.69 AFDa 0.63
+геометрия z (42)     ridge    (b) сырая цель, без набора pooled r 0.491 R2 0.241 | inside sets: CM10 0.52 AMDa 0.54 AMin 0.72 CF10 0.47 AFin 0.69 AFDa 0.64
+геометрия z (42)     ridge    (c) сырая цель + набор     pooled r 0.772 R2 0.596 | inside sets: CM10 0.52 AMDa 0.54 AMin 0.72 CF10 0.46 AFin 0.69 AFDa 0.64
+геометрия z + 28     boosting (a) z-цель, без набора     pooled r 0.698 R2 0.482 | inside sets: CM10 0.63 AMDa 0.64 AMin 0.80 CF10 0.62 AFin 0.76 AFDa 0.70
+геометрия z + 28     boosting (b) сырая цель, без набора pooled r 0.673 R2 0.438 | inside sets: CM10 0.60 AMDa 0.61 AMin 0.76 CF10 0.60 AFin 0.74 AFDa 0.68
+геометрия z + 28     boosting (c) сырая цель + набор     pooled r 0.830 R2 0.685 | inside sets: CM10 0.62 AMDa 0.63 AMin 0.79 CF10 0.61 AFin 0.76 AFDa 0.71
+геометрия z + 28     ridge    (a) z-цель, без набора     pooled r 0.682 R2 0.466 | inside sets: CM10 0.58 AMDa 0.62 AMin 0.78 CF10 0.58 AFin 0.76 AFDa 0.72
+геометрия z + 28     ridge    (b) сырая цель, без набора pooled r 0.556 R2 0.309 | inside sets: CM10 0.57 AMDa 0.61 AMin 0.79 CF10 0.58 AFin 0.76 AFDa 0.72
+геометрия z + 28     ridge    (c) сырая цель + набор     pooled r 0.816 R2 0.666 | inside sets: CM10 0.57 AMDa 0.61 AMin 0.79 CF10 0.58 AFin 0.76 AFDa 0.72
+все 112              boosting (a) z-цель, без набора     pooled r 0.714 R2 0.502 | inside sets: CM10 0.66 AMDa 0.66 AMin 0.81 CF10 0.65 AFin 0.77 AFDa 0.72
+все 112              boosting (b) сырая цель, без набора pooled r 0.803 R2 0.632 | inside sets: CM10 0.61 AMDa 0.62 AMin 0.77 CF10 0.63 AFin 0.74 AFDa 0.69
+все 112              boosting (c) сырая цель + набор     pooled r 0.838 R2 0.697 | inside sets: CM10 0.65 AMDa 0.65 AMin 0.80 CF10 0.65 AFin 0.77 AFDa 0.73
+все 112              ridge    (a) z-цель, без набора     pooled r 0.713 R2 0.508 | inside sets: CM10 0.62 AMDa 0.66 AMin 0.80 CF10 0.62 AFin 0.78 AFDa 0.74
+все 112              ridge    (b) сырая цель, без набора pooled r 0.572 R2 0.327 | inside sets: CM10 0.61 AMDa 0.65 AMin 0.81 CF10 0.61 AFin 0.78 AFDa 0.75
+все 112              ridge    (c) сырая цель + набор     pooled r 0.831 R2 0.691 | inside sets: CM10 0.61 AMDa 0.66 AMin 0.81 CF10 0.61 AFin 0.78 AFDa 0.75

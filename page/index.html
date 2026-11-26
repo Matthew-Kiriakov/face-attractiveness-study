@@ -1,0 +1,1094 @@
+<!doctype html>
+<!-- Face-attractiveness study: one page, no build step. Reads data.json (or its mirror data.js when opened from disk). Shapes: DATA_SCHEMA.md. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predicting ratings of facial photographs</title>
+<style>
+:root{
+  --bg:#E9E6E0; --surface:#F4F2EE; --surface2:#DEDAD2; --ink:#24231F; --muted:#67625A; --line:#CBC6BC;
+  --acc:#3D6252; --acc2:#9A7A4A; --acc-soft:#D3DCD4; --slate:#8D8980; --slate-soft:#D3CFC6;
+  --stage:#D8D4CB; --shade:#3A2E28; --skin:#E4D3C2; --hair:#4A4540; --cloth:#A9A397;
+  --env-a:#BDB8AD; --env-b:#A8A296; --env-flap:#B2ACA0; --env-in:#FFFFFF; --shadow:0 1px 2px rgba(36,35,31,.07),0 10px 26px rgba(36,35,31,.07);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 .4 0 0 0 0 .38 0 0 0 0 .34 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  --on-acc:#F4F2EE; --seal-a:#B08A55; --seal-b:#7C5F34;
+  --serif:"Palatino Linotype","Book Antiqua",Palatino,"Iowan Old Style",Georgia,serif;
+  --sans:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#141516; --surface:#1C1E1F; --surface2:#262829; --ink:#E8E5DE; --muted:#9A968D; --line:#313334;
+  --acc:#93AB9D; --acc2:#B09C78; --acc-soft:#25302B; --slate:#6C6A64; --slate-soft:#2D2F30;
+  --stage:#1F2021; --hair:#4A4540; --cloth:#3A3B3A;
+  --grain:none; --env-a:#35373A; --env-b:#2A2C2E; --env-flap:#303234; --env-in:#1C1E1F; --shadow:0 1px 2px rgba(0,0,0,.5),0 10px 26px rgba(0,0,0,.3);
+  --on-acc:#141516; --seal-a:#8E7650; --seal-b:#6B5838;}}
+:root[data-theme=dark]{
+  --bg:#141516; --surface:#1C1E1F; --surface2:#262829; --ink:#E8E5DE; --muted:#9A968D; --line:#313334;
+  --acc:#93AB9D; --acc2:#B09C78; --acc-soft:#25302B; --slate:#6C6A64; --slate-soft:#2D2F30;
+  --stage:#1F2021; --hair:#4A4540; --cloth:#3A3B3A;
+  --grain:none; --env-a:#35373A; --env-b:#2A2C2E; --env-flap:#303234; --env-in:#1C1E1F; --shadow:0 1px 2px rgba(0,0,0,.5),0 10px 26px rgba(0,0,0,.3);
+  --on-acc:#141516; --seal-a:#8E7650; --seal-b:#6B5838;}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg) var(--grain);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.cap{font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+.top{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:10px 24px;
+  background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top b{font:400 16px var(--serif);letter-spacing:.04em;display:flex;align-items:center;gap:10px}
+.top b i{width:9px;height:9px;border-radius:2px;background:var(--acc);display:inline-block;transform:rotate(45deg)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{padding:5px 12px;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--acc);color:var(--on-acc)}
+.top .tools{display:flex;gap:8px;align-items:center}
+.icon{width:32px;height:32px;border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;background:var(--surface)}
+
+.wrap{max-width:1320px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:minmax(0,1fr) clamp(280px,24vw,400px);gap:48px}
+main{min-width:0}
+section{padding:88px 0 8px;border-top:1px solid var(--line);position:relative}
+section::before{content:"";position:absolute;left:0;right:0;top:4px;border-top:1px solid var(--line);opacity:.55}
+section.hero{border:0;padding-top:56px} section.hero::before{display:none}
+h1{font:400 clamp(34px,5vw,66px)/1.06 var(--serif);letter-spacing:-.015em;margin:14px 0 22px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--acc)}
+h2{font:400 clamp(25px,2.8vw,36px)/1.14 var(--serif);letter-spacing:-.01em;margin:6px 0 12px;text-wrap:balance}
+h3{font:400 18px var(--serif);margin:0 0 8px}
+.no{font:400 15px var(--serif);color:var(--acc);letter-spacing:.14em}
+.lede{font-size:18px;max-width:38em}
+p{max-width:40em;margin:0 0 14px} .dim{color:var(--muted)}
+.two{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:44px;align-items:start;margin-top:26px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px;box-shadow:var(--shadow)}
+
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:32px;align-items:center}
+.hero figure{margin:0;max-width:380px;justify-self:center;width:100%}
+.hero figcaption{text-align:center;margin-top:6px}
+.hero-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.hero-links a{border:1px solid var(--acc);border-radius:6px;padding:9px 14px;color:var(--acc);font-size:14px;font-weight:600;text-decoration:none}
+.hero-links a:first-child{background:var(--acc);color:var(--on-acc)}
+.hero-links a:hover{text-decoration:underline}
+.hero-links a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.study-result{margin-top:26px;padding:18px 20px;border-left:3px solid var(--acc);background:var(--surface);border-radius:0 6px 6px 0}
+.study-result h2{font-size:clamp(20px,2.2vw,28px);margin-top:0}
+.study-result p:last-child{margin-bottom:0}
+#s1{scroll-margin-top:52px}
+.ladder{display:grid;grid-template-columns:.8fr 1.5fr 1.1fr 1fr;gap:16px;margin-top:40px;align-items:end}
+.rung{border-top:2px solid var(--line);padding:12px 4px 0 0;min-width:0}
+.rung .num{line-height:1;font:400 1em/1 var(--serif);letter-spacing:-.02em}
+.rung small{display:block;color:var(--muted);font-size:13px;margin-top:8px;max-width:20em}
+.rung b{display:block;font-size:13px;font-weight:620;margin-bottom:8px}
+.rung.r1 .num{font-size:clamp(26px,3vw,38px);color:var(--slate)}
+.rung.r2{border-top-color:var(--acc)} .rung.r2 .num{font-size:clamp(54px,7vw,104px);color:var(--acc)}
+.rung.r3 .num{font-size:clamp(34px,4.4vw,60px)}
+.rung.r4{border:1px solid var(--line);border-radius:60px 60px 6px 6px;padding:26px 16px 14px;display:flex;flex-direction:column;justify-content:space-between;min-height:150px;color:var(--muted);background:var(--surface2);box-shadow:inset 0 6px 14px rgba(0,0,0,.14)}
+.rung.r4 .num{font-size:clamp(30px,3.4vw,46px);color:var(--ink)}
+.rung.r4 .slot{display:flex;align-items:center;gap:10px}
+.rung.r4 .num.closed{color:var(--slate);font-weight:300;font-size:clamp(18px,1.8vw,24px);letter-spacing:.02em;text-transform:uppercase}
+.sealdot{width:22px;height:22px;border-radius:50%;border:1.5px dashed var(--slate);display:inline-grid;place-items:center;font-size:11px;font-weight:700;color:var(--slate);flex:none}
+.ladder-cap{margin-top:14px;font-size:13px;color:var(--muted)}
+
+/* schematic face */
+svg.face{width:100%;height:auto;display:block;overflow:visible}
+.face .skin{fill:var(--skin)} .face .hair{fill:var(--hair)} .face .cloth{fill:var(--cloth)}
+.face .shade{fill:var(--shade);opacity:.5} .face .hi{fill:#fff;opacity:.5} .face .edge{fill:none;stroke:var(--shade);opacity:.35}
+.face .ln{fill:none;stroke:#2A1E22;stroke-linecap:round;stroke-linejoin:round}
+.face .sclera{fill:#F5F8FC} .face .pupil{fill:#0A1020} .face .spec{fill:#fff}
+.face .brow{fill:var(--hair)} .face .tex{fill:none;stroke:#fff;stroke-width:.5;opacity:.12;stroke-linecap:round}
+.face .lipU{fill:#B87684} .face .lipL{fill:#CB8D99} .face .mouth{fill:none;stroke:#5A2A38;stroke-width:.7;stroke-linecap:round}
+.face .age{fill:none;stroke:#3A2A2A;stroke-width:.55;stroke-linecap:round;opacity:var(--age,0);transition:opacity .9s}
+.face .gh{fill:none;stroke:var(--muted);stroke-width:.5;stroke-dasharray:1.6 1.6;opacity:.7}
+.face .sees line{stroke:var(--acc);stroke-width:.7} .face .sees .faint{stroke-width:.4;opacity:.45} .face .sees .ref{stroke-dasharray:1.5 1.5;opacity:.7}
+.face .sees circle{fill:var(--acc);stroke:#fff;stroke-width:.35} .face .sees text{font:600 3.6px var(--sans);fill:var(--acc);paint-order:stroke;stroke:var(--surface);stroke-width:1.2px;stroke-linejoin:round}
+.face .sees{transition:opacity .3s}
+
+/* 01 stage */
+.stage{max-width:clamp(240px,calc((100vh - 290px) * .876),100%);border-radius:6px;overflow:hidden;border:1px solid var(--line);background:var(--stage);box-shadow:var(--shadow)}
+.stage svg{display:block;width:100%;height:auto}
+.stage .bands rect{opacity:calc(var(--src,1) * .42);transition:opacity .9s}
+.v3{position:relative;aspect-ratio:128/146;overflow:hidden;touch-action:pan-y;cursor:grab;background:var(--stage)}
+.v3:active{cursor:grabbing}
+.v3 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.v3 .bands{position:absolute;inset:0;display:flex;opacity:calc(var(--src,0) * .5);transition:opacity .9s} .v3 .bands i{flex:1}
+.v3 .capl{position:absolute;inset:0;width:100%;height:100%;opacity:var(--cap,0);transition:opacity .9s;pointer-events:none}
+.v3 .ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero .v3,.labface .v3{background:transparent}
+.ov .age3{opacity:var(--age,0);transition:opacity .9s} .ov .age3 path{fill:none;stroke:var(--shade);stroke-width:1.1;stroke-linecap:round;opacity:.55}
+.ov .bare3{opacity:var(--bare,0);transition:opacity .9s} .ov .bare3 line{stroke:var(--acc);stroke-width:1;opacity:.7} .ov .bare3 circle{fill:var(--acc);stroke:var(--surface);stroke-width:1}
+.ov .sees line{stroke:var(--acc);stroke-width:1.5} .ov .sees .faint{stroke-width:.9;opacity:.5} .ov .sees .ref{stroke-dasharray:4 4;opacity:.8}
+.ov .sees circle{fill:var(--acc);stroke:var(--surface);stroke-width:1} .ov .sees text{font:600 12px var(--sans);fill:var(--acc);paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+.stage .cap-l{opacity:var(--cap,1);transition:opacity .9s}
+.stage .bare{opacity:var(--bare,0);transition:opacity .9s}
+.stage .bare circle{fill:var(--acc);stroke:#fff;stroke-width:.3} .stage .bare line{stroke:var(--acc);stroke-width:.35;opacity:.6}
+.keys{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 14px;border-top:1px solid var(--line);background:var(--surface);font-size:12.5px;color:var(--muted)}
+.keys span{display:inline-flex;align-items:center;gap:7px;transition:opacity .4s}
+.keys span.off{opacity:.4;text-decoration:line-through}
+.keys i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 0;align-items:center}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 16px 9px 12px;display:flex;gap:10px;align-items:center;font-weight:600;transition:.2s}
+.chip i{width:16px;height:16px;border:1.5px solid currentColor;border-radius:4px;display:grid;place-items:center;font:700 13px/1 var(--sans);font-style:normal}
+.chip:hover{border-color:var(--acc)}
+.chip[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:var(--on-acc)}
+.chip[aria-pressed=true] span{text-decoration:line-through;text-decoration-thickness:1.5px}
+.sticky{position:sticky;top:68px}
+.big{font:400 clamp(56px,6.6vw,92px)/1 var(--serif);letter-spacing:-.02em;color:var(--acc);display:flex;align-items:baseline;gap:12px;margin:16px 0 4px}
+.big small{font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.big .was{font-size:14px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;margin-left:auto}
+.track{position:relative;height:22px;margin:4px 0}
+.track::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.track>*{position:absolute;top:50%;transform:translateY(-50%);transition:left .5s cubic-bezier(.2,.7,.2,1),width .5s cubic-bezier(.2,.7,.2,1)}
+.track .band{height:8px;border-radius:4px;background:var(--acc-soft)}
+.track .band.alt{background:var(--slate-soft)} .track .band.hatch{background:repeating-linear-gradient(135deg,var(--slate) 0 1.5px,transparent 1.5px 5px);opacity:.75;height:14px;border-radius:3px}
+.track .dot{width:11px;height:11px;border-radius:50%;background:var(--acc);margin-left:-5.5px}
+.track .dot.alt{background:var(--acc2)} .track .dot.ring{background:var(--surface);border:2px solid var(--acc)} .track .dot.small{width:7px;height:7px;margin-left:-3.5px;background:var(--slate)}
+.track .tick{width:2px;height:16px;background:var(--ink);margin-left:-1px}
+.rows{display:grid;gap:2px}
+.row{display:grid;grid-template-columns:minmax(120px,34%) 1fr 46px;gap:12px;align-items:center;font-size:14px;padding:3px 8px;border-radius:8px;text-align:left;width:100%}
+.row .num{text-align:right;font-size:13px}
+button.row:hover{background:var(--surface2)} .row[aria-pressed=true]{background:var(--surface);box-shadow:inset 0 0 0 1px var(--acc)}
+.scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin:2px 54px 0 calc(34% + 20px)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted);margin:10px 0}
+.legend span{display:inline-flex;align-items:center;gap:6px} .legend b{font-weight:500} .legend .track{width:26px;display:inline-block}
+ul.plain{list-style:none;padding:0;margin:0}
+.state li{padding:6px 0 6px 18px;position:relative;font-size:15px}
+.state li::before{content:"";position:absolute;left:0;top:15px;width:8px;height:2px;background:var(--acc)}
+.quote{border-left:2px solid var(--acc2);padding:2px 0 2px 14px;margin:0 0 18px}
+.quote .meta{display:flex;gap:8px;align-items:baseline;font-size:12px;color:var(--muted);margin-bottom:4px;flex-wrap:wrap}
+.quote .kind{font-weight:650;letter-spacing:.05em;text-transform:uppercase;font-size:11px;color:var(--acc)} .quote .kind.missed{color:var(--muted)}
+.quote q{font-size:16px;line-height:1.45;quotes:none;display:block}
+.quote .tr{margin-top:6px;display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--muted)}
+.quote .tag{border:1px solid var(--line);border-radius:5px;padding:0 6px;font-size:11px;font-weight:600}
+.quote q.orig{color:var(--muted);margin-top:6px;padding-left:10px;border-left:1px dashed var(--slate)}
+.facts{margin-top:18px;border-top:1px solid var(--line)}
+.facts li{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.facts .num{color:var(--acc);font-weight:650}
+.link{font-size:12.5px;text-decoration:underline;text-underline-offset:3px;color:var(--muted)}
+.link:hover{color:var(--acc)}
+
+.heat{width:100%;max-width:440px;height:auto;display:block}
+.heat .cell{fill:var(--acc)} .heat .ax{stroke:var(--line);stroke-width:1} .heat text{font:10px var(--sans);fill:var(--muted)}
+.heat .p{stroke:var(--slate);stroke-width:1} .heat .c{stroke:var(--ink);stroke-width:3;stroke-linecap:round} .heat circle{fill:var(--acc2);stroke:var(--surface);stroke-width:1.5}
+.heat .id{stroke:var(--slate);stroke-dasharray:3 4}
+
+.cl{display:grid;grid-template-columns:1fr 84px 44px;gap:12px;align-items:center;width:100%;text-align:left;padding:7px 8px;border-radius:8px;font-size:14.5px}
+.cl:hover{background:var(--surface2)} .cl[aria-pressed=true]{background:var(--surface);box-shadow:inset 0 0 0 1px var(--acc)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden} .bar i{display:block;height:100%;background:var(--acc);transition:width .5s}
+.bar.img i{background:var(--acc2)}
+.feat{display:grid;grid-template-columns:1fr 70px 62px;gap:10px;align-items:center;font-size:13.5px;padding:5px 0;border-bottom:1px solid var(--line)}
+.feat .num{font-size:12px;text-align:right;color:var(--muted)}
+.stack{display:flex;height:14px;border-radius:4px;overflow:hidden;background:var(--line)}
+.stack i{display:block} .g{background:var(--acc)} .q{background:var(--acc2)} .a{background:var(--ink)} .sh{background:var(--slate);opacity:.6}
+
+.lab{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:32px;margin-top:22px;align-items:start}
+.pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.labface{border-radius:14px;border:1px solid var(--line);background:var(--stage);padding:8px 24px 0;overflow:hidden}
+.tog{display:inline-flex;gap:8px;align-items:center;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 11px}
+.tog i{width:26px;height:14px;border-radius:8px;background:var(--line);position:relative;transition:.2s}
+.tog i::after{content:"";position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--surface);transition:.2s;box-shadow:0 0 0 1px var(--slate)}
+.tog[aria-pressed=true]{border-color:var(--acc)} .tog[aria-pressed=true] i{background:var(--acc)} .tog[aria-pressed=true] i::after{left:14px;box-shadow:none}
+.read{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.read .num.v{font:400 38px/1 var(--serif);letter-spacing:-.01em} .read small{color:var(--muted);font-size:12.5px;display:block}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tabs button{padding:5px 11px;border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--muted);background:var(--surface)}
+.tabs button[aria-pressed=true]{border-color:var(--acc);color:var(--ink);font-weight:600}
+.sl{display:grid;grid-template-columns:1fr 58px;gap:2px 10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.sl .rng{grid-column:1/-1;position:relative;height:26px}
+.sl input{-webkit-appearance:none;appearance:none;width:100%;height:20px;margin:0;background:linear-gradient(var(--line),var(--line)) center/100% 2px no-repeat;cursor:pointer}
+.sl input::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--surface);border:2px solid var(--acc)}
+.sl input::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--surface);border:2px solid var(--acc)}
+.sl .rng::before{content:"";position:absolute;left:50%;top:5px;width:1px;height:10px;background:var(--muted)}
+.sl .got{position:absolute;bottom:0;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--acc2);transition:left .25s;pointer-events:none}
+.sl .num{text-align:right;font-size:12px} .sl small{color:var(--muted);font-size:12px}
+
+/* 06 sealed lockbox */
+.vault{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.2fr);gap:44px;margin-top:26px;align-items:start}
+.vault>div:first-child{position:sticky;top:84px;align-self:start;padding-top:130px}
+@media (max-width:860px){.vault>div:first-child{position:static}}
+.env{position:relative;width:100%;max-width:360px;aspect-ratio:3/2;perspective:1000px;margin:0 auto;filter:drop-shadow(0 14px 22px rgba(14,26,46,.18))}
+.env>*{position:absolute;inset:0}
+.env .back{background:linear-gradient(160deg,var(--env-a),var(--env-b));border-radius:6px}
+.env .card{z-index:1;inset:9% 7% 8%;background:var(--surface);box-shadow:0 2px 8px rgba(14,26,46,.12);border:1px solid var(--line);border-radius:5px;padding:14px 16px;display:flex;flex-direction:column;transition:transform 1s cubic-bezier(.2,.7,.2,1) .35s;color:var(--ink)}
+.env .card .num{font:400 34px/1 var(--serif);color:var(--acc);margin-top:4px}
+.env .card small{color:var(--muted);font-size:12px;margin-top:4px}
+.env .front{z-index:2;background:linear-gradient(200deg,var(--env-a),var(--env-b));clip-path:polygon(0 100%,0 0,50% 58%,100% 0,100% 100%);border-radius:6px;box-shadow:inset 0 -1px 0 rgba(255,255,255,.2)}
+.env .front::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(14,26,46,.12))}
+.env .flap{inset:0 0 auto 0;height:100%;transform-origin:50% 0;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.5,0,.2,1),z-index 0s .45s;z-index:3;pointer-events:none}
+.env .flap>div{position:absolute;inset:0;clip-path:polygon(0 0,100% 0,50% 58%)}
+.env .flap .out{background:linear-gradient(180deg,var(--env-a),var(--env-flap))}
+.env .flap .out::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(14,26,46,.16))}
+.env .seal{position:absolute;left:50%;top:58%;width:19%;aspect-ratio:1;margin:-9.5% 0 0 -9.5%;z-index:4;transition:transform .5s ease,opacity .5s ease .2s}
+.env .seal i{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--seal-a),var(--seal-b));box-shadow:0 2px 5px rgba(0,0,0,.28),inset 0 0 0 3px rgba(0,0,0,.14);transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.env .seal i:nth-child(1){clip-path:polygon(0 0,56% 0,44% 40%,58% 62%,46% 100%,0 100%)}
+.env .seal i:nth-child(2){clip-path:polygon(56% 0,100% 0,100% 100%,46% 100%,58% 62%,44% 40%)}
+.env .seal b{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.85);font-size:clamp(8px,1.2vw,11px);font-weight:700;letter-spacing:.04em;z-index:2;transition:opacity .3s}
+.env[data-open=true] .flap{transform:rotateX(180deg);z-index:0}
+.env[data-open=true] .flap .out{background:var(--env-b)} .env[data-open=true] .flap .out::after{opacity:0}
+.env[data-open=true] .card{transform:translateY(-50%)}
+.env[data-open=true] .seal i:nth-child(1){transform:translate(-120%,70%) rotate(-24deg)} .env[data-open=true] .seal i:nth-child(2){transform:translate(120%,90%) rotate(20deg)}
+.env[data-open=true] .seal b{opacity:0}
+.env-cap{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.env-cap b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+.stk{display:inline-block;margin-left:8px;padding:0 8px;border:1px solid var(--slate);border-radius:99px;font:600 10px/1.7 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);vertical-align:middle;white-space:nowrap;font-variant-numeric:normal}
+.stk[data-k=conf]{background:var(--acc);border-color:var(--acc);color:var(--on-acc)} .stk[data-k=exp]{border-color:var(--acc2)} .stk[data-k=dev]{border-style:dashed}
+.no .stk{margin-left:14px} .big .stk{margin-left:0;align-self:center} h3+.stk{margin:0 0 0 12px;vertical-align:baseline}
+.stkkey{display:flex;flex-wrap:wrap;gap:6px 24px;margin-top:10px;font-size:12.5px;color:var(--muted)} .stkkey .stk{margin:0 8px 0 0}
+.rung.r4.open{border-radius:6px;box-shadow:none;background:transparent;border:1px solid var(--line);border-top:2px solid var(--acc);color:var(--ink);justify-content:flex-start;gap:6px;min-height:0}
+.rung.r4.open .num{color:var(--acc)}
+.checks{margin-top:8px}
+.chk{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 20px;padding:12px 0;border-top:1px solid var(--line);font-size:14px}
+.chk p{margin:0} .chk b{display:block;font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.vd{grid-column:1/-1;justify-self:start;padding:0 9px;border:1px solid var(--slate);border-radius:99px;font:600 11px/1.7 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chk.hit .vd{border-color:var(--acc);color:var(--ink)} .chk.miss .vd{background:var(--acc2);border-color:var(--acc2);color:var(--on-acc)}
+.row.out .num{color:var(--acc2);font-weight:650}
+.lmkey{margin:18px 0 0;font-size:13px;color:var(--muted)} .lmkey p{margin:0 0 6px;max-width:70ch}
+.lmgroup{margin-top:30px} .lmgroup>h3{font:400 21px var(--serif);margin:0 0 4px} .lmgroup>p{color:var(--muted);font-size:14px;max-width:66ch;margin:4px 0 8px}
+.lm{display:grid;grid-template-columns:minmax(0,1fr) 170px 230px;gap:8px 22px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.lmt{display:flex;gap:12px;align-items:baseline} .lid{font:600 11px var(--sans);letter-spacing:.1em;color:var(--muted);min-width:30px}
+.lmt b{display:block;font-weight:600;font-size:15px} .lmt small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;max-width:48ch}
+.lmv{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.vc{align-self:flex-start;white-space:nowrap;padding:0 9px;border-radius:99px;font:600 11px/1.7 var(--sans);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--slate)}
+.vc.supported{background:var(--acc);border-color:var(--acc);color:var(--on-acc)} .vc.contradicted{border-color:var(--acc2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--acc2)}
+.lmc{width:230px;max-width:100%;height:auto;display:block;overflow:visible}
+.lmc .z{stroke:var(--slate);stroke-width:1} .lmc .th{stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+.lmc .ci{stroke:var(--slate);stroke-width:2;stroke-linecap:round;opacity:.7} .lmc circle{fill:var(--slate)}
+.lm.supported .lmc .ci,.lm.supported .lmc circle{stroke:var(--acc);fill:var(--acc)} .lm.supported .lmc circle{stroke:none}
+.lm.contradicted .lmc .ci{stroke:var(--acc2)} .lm.contradicted .lmc circle{fill:var(--acc2)}
+.lmnot{margin-top:28px;font-size:13px;color:var(--muted);max-width:70ch}
+@media (max-width:760px){.lm{grid-template-columns:minmax(0,1fr) auto} .lm .lmc{grid-column:1/-1;width:100%;max-width:300px} .chk{grid-template-columns:1fr}}
+.soon{border:1px dashed var(--slate);border-radius:12px;padding:22px;color:var(--muted);margin-top:18px}
+.reg li{padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+
+aside{position:sticky;top:68px;align-self:start;margin-top:56px;border:1px solid var(--line);border-top:2px solid var(--acc);border-radius:6px;padding:18px;background:var(--surface);box-shadow:var(--shadow);max-height:calc(100vh - 90px);overflow:auto}
+aside h3{font:400 18px var(--serif);margin:0 0 10px;display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left}
+aside h3 i{display:none;font:400 18px var(--sans);font-style:normal} aside>button{width:100%}
+aside li{font-size:13px;line-height:1.45;padding:9px 0;border-top:1px solid var(--line)}
+footer{padding:48px 0 80px;color:var(--muted);font-size:13px;max-width:52em}
+
+@media (min-width:1700px){.wrap{max-width:1440px}}
+@media (max-width:1000px){
+  .wrap{display:block}
+  aside{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0;z-index:30;border-radius:14px 14px 0 0;border-width:3px 0 0;padding:12px 20px;max-height:72vh}
+  aside h3{margin:0;font-size:15px;cursor:pointer} aside h3 i{display:block;transition:transform .3s}
+  aside ul{display:none;margin-top:10px} aside.open ul{display:block} aside.open h3 i{transform:rotate(45deg)}
+  footer{padding-bottom:120px}
+  .sticky{position:static}
+  .ladder{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start} .rung.r4{grid-column:1/-1;min-height:0}
+  .rung.r2{grid-column:1/-1;order:-1} .rung.r2 .num{font-size:clamp(64px,12vw,104px)}
+}
+@media (max-width:820px){
+  .two,.hero-grid,.lab,.vault{grid-template-columns:1fr}
+  .vault>div:first-child{padding-top:110px}
+  .hero figure{max-width:280px;margin:0 auto}
+  section{padding-top:56px} .row{grid-template-columns:minmax(96px,36%) 1fr 42px;font-size:13px}
+  .scale{margin-left:calc(36% + 20px);margin-right:50px}
+  .top{padding:10px 16px} .wrap{padding:0 16px}
+  .labface{padding:8px 12px 0}
+}
+@media (max-width:480px){.ladder{grid-template-columns:1fr} .rung.r2{order:0} .big small{display:none} .facts li{grid-template-columns:96px 1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="bl1" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1"/></filter>
+  <filter id="bl2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter>
+  <filter id="bl4" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4"/></filter>
+  <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .55  0 0 0 0 .52  0 0 0 0 .48  0 0 0 .9 -.25"/></filter>
+  <radialGradient id="gIris" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#A9B7B2"/><stop offset=".55" stop-color="#62777A"/><stop offset="1" stop-color="#23302F"/></radialGradient>
+  <linearGradient id="gNeck" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A1A1A" stop-opacity=".42"/><stop offset=".6" stop-color="#2A1A1A" stop-opacity=".08"/><stop offset="1" stop-color="#2A1A1A" stop-opacity="0"/></linearGradient>
+  <radialGradient id="gVig" cx=".5" cy=".45" r=".7"><stop offset=".55" stop-color="#14120F" stop-opacity="0"/><stop offset="1" stop-color="#14120F" stop-opacity=".5"/></radialGradient>
+  <linearGradient id="gLight" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>
+</defs></svg>
+
+<div class="top">
+  <b><i></i><span data-t="brand"></span></b>
+  <div class="tools">
+    <div class="seg" id="lang"><button data-v="en">EN</button><button data-v="ru">RU</button></div>
+    <button class="icon" id="theme" aria-label="theme">◐</button>
+  </div>
+</div>
+
+<div class="wrap">
+<main>
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <div class="cap" data-t="kicker"></div>
+        <h1 data-t="h1"></h1>
+        <p class="lede" data-t="lede"></p>
+        <div class="hero-links">
+          <a href="#s1" data-t="explore_link"></a>
+          <a href="../manuscript/en/face_attractiveness_en.pdf" data-t="paper_link"></a>
+        </div>
+      </div>
+      <figure><svg class="face" id="heroFace" viewBox="-64 -72 128 146"></svg><figcaption class="cap" id="heroCap"></figcaption></figure>
+    </div>
+    <div class="study-result">
+      <h2 data-t="result_h"></h2>
+      <p data-t="result_p"></p>
+      <p class="dim" data-t="manual_p"></p>
+    </div>
+    <div class="ladder" id="ladder"></div>
+    <p class="ladder-cap" data-t="ladder_cap"></p>
+    <div class="stkkey" id="stkKey"></div>
+  </section>
+
+  <section id="s1">
+    <div class="no">01<span class="stk" data-k="dev"></span></div><h2 data-t="s1_h"></h2><p data-t="s1_p"></p>
+    <div class="chips"><span class="cap" data-t="subtract"></span><span id="chips" style="display:contents"></span></div>
+    <div class="two">
+      <div class="sticky">
+        <div class="stage"><svg id="stage" class="face" viewBox="-64 -72 128 146"></svg>
+          <div class="keys" id="keys"></div></div>
+        <div class="big"><span class="num" id="remR"></span><span class="stk" id="remStat" data-k="dev"></span><small data-t="r_left"></small><span class="was" id="was"></span></div>
+        <div class="track" id="remTrack"></div>
+        <div class="scale" style="margin:0"><span>0</span><span>0.5</span><span>1</span></div>
+      </div>
+      <div>
+        <ul class="plain state" id="remState"></ul>
+        <div class="rows" id="remSets" style="margin:14px 0 26px"></div>
+        <div id="quotes"></div><ul class="plain facts" id="facts"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="s2">
+    <div class="no">02<span class="stk" data-k="dev"></span></div><h2 data-t="s2_h"></h2><p data-t="s2_p"></p>
+    <div class="two">
+      <div>
+        <svg class="heat" id="heat" viewBox="-34 -8 362 362"></svg>
+        <div class="legend"><span><svg width="14" height="14"><circle cx="7" cy="7" r="4.5" fill="var(--acc2)"/></svg><b data-t="lg_bin"></b></span>
+          <span><svg width="14" height="14"><line x1="7" y1="1" x2="7" y2="13" stroke="var(--ink)" stroke-width="3"/></svg><b data-t="lg_ci"></b></span>
+          <span><svg width="14" height="14"><line x1="7" y1="1" x2="7" y2="13" stroke="var(--slate)"/></svg><b data-t="lg_spread"></b></span>
+          <span><svg width="14" height="14"><rect width="14" height="14" fill="var(--acc)" opacity=".6"/></svg><b data-t="lg_cell"></b></span></div>
+      </div>
+      <div>
+        <div class="seg" id="fam" style="margin-bottom:14px"><button data-v="boosting">boosting</button><button data-v="ridge">ridge</button></div>
+        <div class="rows" id="setRows"></div>
+        <div class="scale"><span>0</span><span>0.5</span><span>1</span></div>
+        <p class="dim" style="font-size:13.5px;margin-top:14px" id="setNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s3">
+    <div class="no">03<span class="stk" data-k="exp"></span></div><h2 data-t="s3_h"></h2><p data-t="s3_p"></p>
+    <div class="two">
+      <div><div class="legend"><span><i class="bar" style="width:22px"><i style="width:100%"></i></i><b data-t="lg_geo"></b></span><span><i class="bar img" style="width:22px"><i style="width:100%"></i></i><b data-t="lg_img"></b></span></div>
+        <div id="clList"></div></div>
+      <div class="card" id="clDetail"></div>
+    </div>
+    <h3 style="margin-top:34px" data-t="common_h"></h3><p class="dim" style="font-size:14px" data-t="common_p"></p>
+    <div class="rows" id="common"></div>
+    <div class="legend"><span><i class="stack" style="width:14px"><i class="g" style="width:100%"></i></i><b data-t="c_g"></b></span><span><i class="stack" style="width:14px"><i class="q" style="width:100%"></i></i><b data-t="c_q"></b></span>
+      <span><i class="stack" style="width:14px"><i class="a" style="width:100%"></i></i><b data-t="c_a"></b></span><span><i class="stack" style="width:14px"><i class="sh" style="width:100%"></i></i><b data-t="c_sh"></b></span></div>
+  </section>
+
+  <section id="s4">
+    <div class="no">04<span class="stk" data-k="dev"></span></div><h2 data-t="s4_h"></h2><p data-t="s4_p"></p>
+    <div class="lab">
+      <div>
+        <div class="pick"><div class="seg" id="race"><button data-v="C" data-t="race_c"></button><button data-v="A" data-t="race_a"></button></div>
+          <div class="seg" id="sex"><button data-v="M" data-t="sex_m"></button><button data-v="F" data-t="sex_f"></button></div>
+          <div class="seg" id="src"></div>
+          <button class="tog" id="sees" aria-pressed="false"><i></i><span data-t="sees"></span></button></div>
+        <div class="labface"><svg class="face" id="labFace" viewBox="-64 -72 128 146"></svg></div>
+        <div class="read">
+          <div><div class="cap">ridge</div><div class="num v" id="vRidge"></div><div class="track" id="tRidge"></div><small id="pRidge"></small></div>
+          <div><div class="cap">boosting</div><div class="num v" id="vBoost"></div><div class="track" id="tBoost"></div><small id="pBoost"></small></div>
+        </div>
+        <p class="dim" style="font-size:13px;margin-top:10px" data-t="read_cap"></p>
+      </div>
+      <div>
+        <div class="tabs" id="slTabs"></div>
+        <div id="sliders"></div>
+        <p style="margin-top:12px"><button class="link" id="reset" data-t="reset"></button></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s5">
+    <div class="no">05</div><h2 data-t="s5_h"></h2><p data-t="s5_p"></p>
+    <h3 style="margin-top:22px" data-t="s5_scut"></h3><span class="stk" data-k="dev"></span>
+    <div class="rows" id="ceilScut"></div><div class="scale"><span>0</span><span>0.5</span><span>1</span></div>
+    <div class="legend"><span><i class="track"><i class="dot" style="left:50%"></i></i><b data-t="lg_model"></b></span><span><i class="track"><i class="band alt" style="left:0;width:100%"></i></i><b data-t="lg_judge"></b></span>
+      <span><i class="track"><i class="tick" style="left:50%"></i></i><b data-t="lg_ceil"></b></span></div>
+    <h3 style="margin-top:30px" data-t="s5_meb"></h3><span class="stk" data-k="exp"></span><p data-t="s5_meb_p"></p>
+    <div class="rows" id="ceilMeb"></div><div class="scale"><span>0</span><span>0.5</span><span>1</span></div>
+    <div class="legend"><span><i class="track"><i class="dot ring" style="left:50%"></i></i><b data-t="lg_in"></b></span><span><i class="track"><i class="dot" style="left:50%"></i></i><b data-t="lg_tr"></b></span>
+      <span><i class="track"><i class="dot alt" style="left:50%"></i></i><b data-t="lg_age"></b></span><span><i class="track"><i class="dot small" style="left:50%"></i></i><b data-t="lg_cap"></b></span>
+      <span><i class="track"><i class="tick" style="left:50%"></i></i><b data-t="lg_ceil"></b></span></div>
+  </section>
+
+  <section id="s6">
+    <div class="no">06<span class="stk" data-k="conf"></span></div><h2 data-t="s6_h"></h2><p data-t="s6_p"></p>
+    <div class="vault">
+      <div>
+        <div class="env" id="env" data-open="false">
+          <div class="back"></div>
+          <div class="card"><span class="cap" id="cardCap"></span><span class="num" id="cardNum"></span><small id="cardSub"></small></div>
+          <div class="front"></div>
+          <div class="flap"><div class="out"></div></div>
+          <div class="seal"><i></i><i></i><b>1×</b></div>
+        </div>
+        <div class="env-cap"><b id="lockTitle"></b><span id="lockMeta"></span></div>
+      </div>
+      <div>
+        <div class="rows" id="lockRows"></div><div class="scale"><span>0</span><span>0.5</span><span>1</span></div>
+        <div class="legend"><span><i class="track"><i class="band hatch" style="left:0;width:100%"></i></i><b data-t="lg_band"></b></span><span><i class="track"><i class="dot small" style="left:50%"></i></i><b data-t="lg_dev"></b></span>
+          <span><i class="track"><i class="band" style="left:15%;width:60%"></i><i class="dot" style="left:45%"></i></i><b data-t="lg_res"></b></span></div>
+        <div class="cap" style="margin-top:26px" data-t="checks_h"></div><div class="checks" id="checks"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s7">
+    <div class="no">07<span class="stk" data-k="conf"></span></div><h2 data-t="s7_h"></h2>
+    <p data-t="s7_p1"></p><p data-t="s7_p2"></p><p data-t="s7_p3"></p>
+    <div class="lmkey" id="lmKey"></div>
+    <div id="lm"></div>
+    <p class="lmnot" data-t="s7_not"></p>
+  </section>
+  <footer id="foot"></footer>
+</main>
+
+<aside id="claims"><button><h3><span data-t="claims_h"></span><i>+</i></h3></button><ul class="plain" id="claimList"></ul></aside>
+</div>
+
+<script>
+const L = {
+en: {
+  brand: "Face study", theme: "Switch theme", kicker: "Independent study · SCUT-FBP5500 and MEBeauty",
+  h1: "What can a model learn from a <em>face photograph?</em>",
+  lede: "I started by testing which measurements of faces and photographs predict a panel’s average ratings. As the study progressed, I asked how much the apparent quality of the model depends on how we compare its predictions.",
+  ladder: ["mixed-set reference", "inside one source", "adjusted for age and capture", "held-out set"],
+  ladder_sub: ["six sources in one pile; the model is told which source", "each face is compared only with faces of its own source", "perceived age and capture statistics held fixed too", "mean inside six test groups"],
+  ladder_cap: "These earlier comparisons use different evaluation setups. The first two also differ in model and aggregation. Use the controls below to explore them.",
+  s1_h: "How the comparison changes", s1_p: "Explore earlier analyses of data source, estimated age and measured capture conditions. The adjustments describe associations, and the illustration indicates the active settings.",
+  subtract: "Comparison settings", lever: { source: "Data source", age: "Perceived age", capture: "Capture conditions" }, r_left: "correlation r", was: v => `mixed-set reference ${v}`,
+  keys: { source: "tint: data source", age: "lines: perceived age", capture: "grain, vignette: capture" },
+  st: { none: "Raw 1–5 ratings, six sets in one pile. The model is told which set a face comes from, and the level gap between sets does much of the work.",
+        source: "Each face is compared only with faces from its own set; ratings are standardised inside the set.",
+        age: "Perceived age (a network's estimate) is held fixed.",
+        capture: "Six capture statistics are held fixed: face size and share of the frame, sharpness, brightness, contrast, file density." },
+  mixed: "Sets are mixed: one number.",
+  kind: { hypothesis: "hypothesis", result: "result", missed: "did not work", decision: "decision" },
+  translated: "translation", showOrig: "original (EN)", hideOrig: "hide original",
+  s2_h: "Model against judges, set by set", s2_p: "Faces are grouped by what the model predicted. Each dot is the judges' mean for one eighth of the set; shading shows where faces fall. Pick a set.",
+  lg_bin: "mean of an eighth of the faces", lg_ci: "95% interval of that mean", lg_spread: "middle 80% of faces", lg_cell: "density of faces",
+  ax_x: "model prediction, z", ax_y: "judges' mean, z", setNote: (n, r, lo, hi, rho) => `${n} faces · r ${r} [${lo}, ${hi}] · Spearman ρ ${rho}. Interval: bootstrap over faces.`,
+  s3_h: "What the model leans on", s3_p: "The 70 measurements are grouped by what they describe. I shuffled each group’s columns together on validation folds and measured the drop in predictive R². Each share is a fraction of the sum of positive drops.",
+  lg_geo: "proportions from landmarks", lg_img: "measured on the image", share_of: "of the summed positive drops", lost: "held-out R² lost when shuffled",
+  inside: "in group", dir: "goes with", up: "higher ratings", down: "lower ratings", n_feat: n => `${n} measurements`,
+  common_h: "Shared credit: geometry, capture, age", common_p: "Variance of the ratings explained inside each set, split into what only one block carries and what the blocks share.",
+  c_g: "only geometry", c_q: "only capture", c_a: "only age", c_sh: "shared between them",
+  s4_h: "A face made of measurements", s4_p: "A generic head, warped by the landmarks the model measures. Each slider asks for one proportion to change, in standard deviations of that set, with the other 41 held where they are. Proportions share landmarks, so the head follows as far as geometry allows: the dot under a slider is what the head actually measures, and the models read the dots. Drag to turn it.",
+  race_c: "Caucasian", race_a: "Asian", sex_m: "Men", sex_f: "Women", reset: "Reset to the set's average", sees: "What the model sees",
+  read_cap: "Scores are in standard deviations of the judges’ mean within the set. The boosting display approximates the fitted model by adding separate response curves for the proportions. The dots show landmarks, and the lines show the measurement for the active slider.",
+  pct: p => `above ${p}% of this set's predictions`, sd: "SD",
+  s5_h: "Reliability and transfer", s5_p: "The reliability of the panel mean and agreement with an individual judge offer two distinct reference points.",
+  s5_scut: "Inside SCUT-FBP5500", s5_meb: "Moved to MEBeauty", s5_meb_p: "The model was trained on SCUT and its inputs were standardised using MEBeauty statistics. In an exploratory analysis of folds 1–4, adjusting for estimated age changed the mean within-group correlation from 0.331 to 0.216.",
+  lg_model: "model, with interval", lg_judge: "one judge against the other 59", lg_ceil: "label ceiling", lg_in: "trained inside MEBeauty", lg_tr: "SCUT model, transferred", lg_age: "transfer with age held fixed", lg_cap: "capture statistics only",
+  mean4: "Mean of four groups",
+  s6_h: "What the final tests showed", s6_p: "SCUT was split on 29 October. Some future test photos had already been used in early analyses, and the author had seen and rated some. MEBeauty fold 0 was included in a descriptive audit of ratings. The final scripts ran once each under internally recorded rules. The table compares expectations and results.",
+  sealed: "Sealed", opened: "Opened", lockMeta: (d, n) => `frozen ${d} · ${n} faces · one run`, lockTitle: "Result on the held-out set", registered: "Registered in advance",
+  lg_band: "written expectation ±0.08", lg_dev: "development value", lg_res: "held-out result, 95% interval", meb_a: "MEBeauty fold 0, SCUT model, mean of four", meb_b: "MEBeauty fold 0, trained with MEBeauty, mean of four",
+  card_cap: "mean of six sets", card_none: "—", card_exp: (e, d) => `written: ${e}, downgrade below ${d}`, card_in: d => `not below ${d}: claim not downgraded`, card_out: d => `below ${d}: claim downgraded`, card_prev: "layout preview, no data",
+  held_slot: "sealed", held_exp: (e, d) => `written: ${e}, downgrade below ${d}`,
+  s7_h: "Lookmaxxing claims vs what is measurable", claims_h: "What we do not claim",
+  s7_p1: "The measures and rules were recorded before the final run. I proposed topics and approved the final list after the assistant shared its measures and development results. The tests show which associations repeated for the selected measures on further SCUT photos.",
+  s7_p2: "The raters are sixty volunteer raters judging 350 px photographs (SCUT-FBP5500), so a verdict describes this pool and these photographs.",
+  s7_p3: "A verdict is about the measure, not the slogan. Rule, fixed in advance: a claim is supported if the mean Spearman ρ is at least 0.15 and the interval is above 0 in two thirds of the sets; contradicted if the mirror holds; otherwise not distinguishable.",
+  s7_not: "Not testable here, so not shown as claims: jaw development, eye depth, cheek volume, hair and skin state, eye size, skin colour.",
+  lm_key: "Each chart has one row per set: men first (CM 10k US, AM DataTang, AM internet), then women (CF 10k US, AF internet, AF DataTang). Dot: Spearman ρ with the judges' z inside the set; line: 95% interval; dashed lines: ±0.15, the registered threshold.",
+  lm_h_sup: "Direction held", lm_h_con: "The opposite held", lm_h_jaw: "One dimension: a tapering lower face",
+  lm_jaw_p: "Four tests, one picture. In these photographs faces with cheekbones wide relative to the jaw and a tapering outline are rated higher, while a sharper jaw corner and a wider jaw go with lower ratings. Read it as one group, not as four separate results.",
+  lm_h_ind: "Not distinguishable", lm_h_sym: "Symmetry", lm_sym_p: "Ten symmetry features add nothing measurable to the other 70 (mean gain in r +0.004). This is a gain over other features, not a statement that symmetry does not matter.",
+  lmv: { supported: "direction held", contradicted: "opposite held", indistinct: "not distinguishable", no_gain: "no gain" }, men: "men", women: "women", lm_mean: "mean ρ", lm_gain: "mean gain in r",
+  stat: { conf: "confirmatory", exp: "exploratory", dev: "development only" },
+  stat_long: { conf: "Confirmatory: one run under rules written beforehand.", exp: "Exploratory: looked at before, or computed for this page.", dev: "Development only: faces used while building the model, not yet tested on unseen faces." },
+  checks_h: "Written, then measured", v_hit: "as written", v_partial: "partly", v_miss: "missed", w_lab: "written", r_lab: "result",
+  foot: (d, n) => `Data: SCUT-FBP5500 (development part, ${n} faces), MEBeauty folds 1–4. Built ${d}. No photographs are used on this page. Head: MakeHuman base mesh (CC0), warped by landmarks. Held-out numbers: one run each under written rules (FREEZE v1–v1.4).`,
+  explore_link: "Explore the interactive analysis",
+  paper_link: "Read the manuscript",
+  result_h: "A change of scale on the same 1,196 photos",
+  result_p: "Returning the same predictions and ratings to the original 1–5 scale changed pooled correlation from <strong>0.672 to 0.824</strong>. Mean within-group correlation stayed at <strong>0.678</strong>.",
+  manual_p: "The original feature question also mattered. The automatic eye-contrast measure agreed weakly with my manual assessment (Spearman ρ = 0.26 on 93 photos).",
+},
+ru: {
+  brand: "Исследование лица", theme: "Сменить тему", kicker: "Независимое исследование · SCUT-FBP5500 и MEBeauty",
+  h1: "Что модель узнаёт по <em>фотографии лица?</em>",
+  lede: "Я начал с вопроса о том, какие признаки лица и снимка предсказывают среднюю оценку судей. По ходу работы стало интересно, насколько впечатление о качестве модели зависит от того, как сравнивать её прогнозы.",
+  ladder: ["на общей выборке", "внутри одного источника", "поправка на возраст и съёмку", "held-out set"],
+  ladder_sub: ["шесть источников в одной куче; модели сказано, откуда лицо", "каждое лицо сравнивается только с лицами своего источника", "воспринимаемый возраст и статистики съёмки тоже зафиксированы", "средняя корреляция внутри шести проверочных групп"],
+  ladder_cap: "Здесь собраны ранние сравнения с разными способами оценки. Между первыми двумя меняются также модель и способ усреднения. Переключатели ниже позволяют посмотреть эти расчёты.",
+  s1_h: "Как меняется сравнение", s1_p: "Посмотри ранние расчёты с учётом источника, оценки возраста и показателей съёмки. Поправки описывают связи, а рисунок показывает выбранные настройки.",
+  subtract: "Настройки сравнения", lever: { source: "Источник данных", age: "Воспринимаемый возраст", capture: "Условия съёмки" }, r_left: "корреляция r", was: v => `на общей выборке ${v}`,
+  keys: { source: "оттенок: источник данных", age: "линии: воспринимаемый возраст", capture: "зерно, виньетка: съёмка" },
+  st: { none: "Сырые оценки 1–5, шесть наборов в одной куче. Модели сказано, из какого набора лицо, и разница уровней между наборами делает большую часть работы.",
+        source: "Каждое лицо сравнивается только с лицами своего набора; оценки нормированы внутри набора.",
+        age: "Воспринимаемый возраст (оценка нейросети) зафиксирован.",
+        capture: "Зафиксированы шесть статистик съёмки: размер лица и его доля в кадре, резкость, яркость, контраст, плотность файла." },
+  mixed: "Наборы смешаны: одно число.",
+  kind: { hypothesis: "гипотеза", result: "результат", missed: "не сработало", decision: "решение" },
+  translated: "перевод", showOrig: "оригинал (EN)", hideOrig: "скрыть оригинал",
+  s2_h: "Модель против судей, набор за набором", s2_p: "Лица сгруппированы по предсказанию модели. Каждая точка — средняя оценка судей для одной восьмой набора; заливка показывает, где лежат лица. Выберите набор.",
+  lg_bin: "среднее по восьмой части лиц", lg_ci: "95% интервал этого среднего", lg_spread: "средние 80% лиц", lg_cell: "плотность лиц",
+  ax_x: "предсказание модели, z", ax_y: "средняя оценка судей, z", setNote: (n, r, lo, hi, rho) => `${n} лиц · r ${r} [${lo}, ${hi}] · Spearman ρ ${rho}. Интервал: bootstrap по лицам.`,
+  s3_h: "На что опирается модель", s3_p: "70 признаков сгруппированы по смыслу. Для каждой группы столбцы совместно перемешивались на проверочных фолдах. Для каждой группы показано падение предсказательного R² и его доля от суммы положительных падений.",
+  lg_geo: "пропорции по точкам", lg_img: "измерено по изображению", share_of: "от суммы положительных падений", lost: "потеря held-out R² при перемешивании",
+  inside: "в группе", dir: "идёт с", up: "более высокой оценкой", down: "более низкой оценкой", n_feat: n => `измерений: ${n}`,
+  common_h: "Общий счёт: геометрия, съёмка, возраст", common_p: "Объяснённый разброс оценок внутри каждого набора: что несёт только один блок и что блоки делят между собой.",
+  c_g: "только геометрия", c_q: "только съёмка", c_a: "только возраст", c_sh: "общее между ними",
+  s4_h: "Лицо из измерений", s4_p: "Типовая голова, искажённая по landmarks, которые измеряет модель. Каждый ползунок просит изменить одну пропорцию в SD этого набора, оставив остальные 41 на месте. Пропорции делят общие точки, поэтому голова следует за ползунком настолько, насколько позволяет геометрия: точка под ползунком — то, что голова действительно измеряет, и модели читают точки. Потяните, чтобы повернуть.",
+  race_c: "Европейцы", race_a: "Азиаты", sex_m: "Мужчины", sex_f: "Женщины", reset: "Вернуть среднее по набору", sees: "Что видит модель",
+  read_cap: "Значения показаны в стандартных отклонениях средней оценки судей внутри группы. Браузер приближает прогноз бустинга суммой отдельных кривых по пропорциям. Точки обозначают ориентиры на лице, а линии показывают измерение выбранного ползунка.",
+  pct: p => `выше ${p}% предсказаний этого набора`, sd: "SD",
+  s5_h: "Надёжность оценок и перенос", s5_p: "Надёжность среднего панели и согласие с отдельным судьёй дают два разных ориентира для модели.",
+  s5_scut: "Внутри SCUT-FBP5500", s5_meb: "Перенос на MEBeauty", s5_meb_p: "Модель обучена на SCUT, а её входные признаки нормированы по статистикам MEBeauty. В поисковой проверке на частях 1–4 после поправки на оценку возраста средняя внутригрупповая корреляция изменилась с 0,331 до 0,216.",
+  lg_model: "модель, с интервалом", lg_judge: "один судья против остальных 59", lg_ceil: "потолок разметки", lg_in: "обучена внутри MEBeauty", lg_tr: "модель SCUT, перенос", lg_age: "перенос при фиксированном возрасте", lg_cap: "только статистики съёмки",
+  mean4: "Среднее по четырём группам",
+  s6_h: "Что показали итоговые тесты", s6_p: "SCUT разделили 29 октября. Часть будущих тестовых снимков уже участвовала в ранних анализах, некоторые автор видел и оценивал. Часть 0 MEBeauty вошла в описательный аудит оценок. Итоговые скрипты запустили по одному разу по правилам, записанным внутри проекта. В таблице сопоставлены ожидания и результаты.",
+  sealed: "Запечатано", opened: "Вскрыто", lockMeta: (d, n) => `заморозка ${d} · ${n} лиц · один прогон`, lockTitle: "Результат на held-out set", registered: "Записано заранее",
+  lg_band: "записанное ожидание ±0.08", lg_dev: "значение на разработке", lg_res: "результат на held-out, 95% интервал", meb_a: "MEBeauty, fold 0, модель SCUT, среднее по четырём", meb_b: "MEBeauty, fold 0, обучение вместе с MEBeauty, среднее по четырём",
+  card_cap: "среднее по шести наборам", card_none: "—", card_exp: (e, d) => `записано: ${e}, понижение ниже ${d}`, card_in: d => `не ниже ${d}: утверждение не понижается`, card_out: d => `ниже ${d}: утверждение понижается`, card_prev: "макет, данных нет",
+  held_slot: "закрыто", held_exp: (e, d) => `записано: ${e}, понижение ниже ${d}`,
+  s7_h: "Утверждения луксмаксинга и то, что можно измерить", claims_h: "Чего мы не утверждаем",
+  s7_p1: "Меры и правила записаны до итогового прогона. Я предложил темы и утвердил итоговый список после того, как агент показал меры и рабочие результаты. Проверка показывает, какие связи для выбранных мер повторились на отложенных снимках SCUT.",
+  s7_p2: "Оценщики — шестьдесят добровольных оценщиков, смотревших фотографии 350 px (SCUT-FBP5500), поэтому вердикт описывает этот пул и эти фотографии.",
+  s7_p3: "Вердикт относится к мере, а не к лозунгу. Правило, зафиксированное заранее: утверждение подтверждено, если средний Spearman ρ не меньше 0.15 и интервал выше 0 в двух третях наборов; опровергнуто, если выполняется зеркальное; иначе не различимо.",
+  s7_not: "Здесь не проверить, поэтому не показано как утверждения: развитие челюсти, глубина посадки глаз, объём скул, волосы и состояние кожи, размер глаз, цвет кожи.",
+  lm_key: "На каждом графике по строке на набор: сначала мужчины (CM 10k US, AM DataTang, AM internet), затем женщины (CF 10k US, AF internet, AF DataTang). Точка: Spearman ρ с z судей внутри набора; линия: 95% интервал; пунктир: ±0.15, записанный порог.",
+  lm_h_sup: "Направление подтвердилось", lm_h_con: "Верно обратное", lm_h_jaw: "Одно измерение: сужающаяся нижняя часть лица",
+  lm_jaw_p: "Четыре теста, одна картина. На этих фотографиях выше оценены лица с широкими относительно челюсти скулами и сужающимся контуром, а более резкий угол челюсти и более широкая челюсть идут с более низкой оценкой. Читать как одну группу, а не как четыре отдельных результата.",
+  lm_h_ind: "Не различимо", lm_h_sym: "Симметрия", lm_sym_p: "Десять признаков симметрии не добавляют измеримого к остальным 70 (средний прирост r +0.004). Это прирост над другими признаками, а не утверждение, что симметрия не важна.",
+  lmv: { supported: "направление подтвердилось", contradicted: "верно обратное", indistinct: "не различимо", no_gain: "нет прироста" }, men: "мужчины", women: "женщины", lm_mean: "средний ρ", lm_gain: "средний прирост r",
+  stat: { conf: "подтверждающий", exp: "разведочный", dev: "только разработка" },
+  stat_long: { conf: "Подтверждающий: один прогон по правилам, записанным заранее.", exp: "Разведочный: смотрели раньше или посчитано для этой страницы.", dev: "Только разработка: лица, на которых строили модель; на неизвестных лицах ещё не проверено." },
+  checks_h: "Записано, затем измерено", v_hit: "как записано", v_partial: "частично", v_miss: "промах", w_lab: "записано", r_lab: "получено",
+  foot: (d, n) => `Данные: SCUT-FBP5500 (часть для разработки, ${n} лиц), MEBeauty, fold 1–4. Собрано ${d}. Фотографий на странице нет. Голова: базовая сетка MakeHuman (CC0), искажённая по landmarks. Held-out числа: по одному прогону по записанным правилам (FREEZE v1–v1.4).`,
+  explore_link: "Открыть интерактивный разбор",
+  paper_link: "Читать рукопись",
+  result_h: "Смена шкалы на тех же 1 196 снимках",
+  result_p: "При возврате тех же прогнозов и оценок на шкалу 1–5 общая корреляция изменилась с <strong>0,672 до 0,824</strong>. Средняя внутригрупповая корреляция осталась <strong>0,678</strong>.",
+  manual_p: "Исходный вопрос о признаках тоже дал результат. Автоматическая мера контраста глаз слабо согласовалась с моей ручной оценкой (Спирмен ρ = 0,26 на 93 снимках).",
+}};
+
+const $ = (s, r = document) => r.querySelector(s);
+const el = (tag, props = {}, ...kids) => { const e = Object.assign(document.createElement(tag), props); e.append(...kids.flat().filter(k => k != null)); return e; };
+const sv = (tag, attrs = {}, ...kids) => { const e = document.createElementNS("http://www.w3.org/2000/svg", tag); for (const k in attrs) e.setAttribute(k, attrs[k]); e.append(...kids); return e; };
+const f2 = x => (x < 0 ? "−" : "") + Math.abs(x).toFixed(2);
+const sg = x => Math.abs(x) < .005 ? "0.00" : (x < 0 ? "−" : "+") + Math.abs(x).toFixed(2);
+const pc = x => Math.round(x * 100) + "%";
+const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+const S = { lang: store.get("lang") || (navigator.language.startsWith("ru") ? "ru" : "en"), removed: new Set(["source"]), set: "CM 10k_US", fam: "boosting",
+            cluster: null, race: "C", sex: "M", src: null, tab: "shape", z: {}, zc: {}, active: null, sees: false, orig: new Set() };
+let D, t, stageFace, stageView, labFace, labGhost, labView, heroView, heroTimer;
+const name = o => o[S.lang];
+const stkFill = n => { n.textContent = t.stat[n.dataset.k]; n.title = t.stat_long[n.dataset.k]; return n; };
+const stkEl = k => { const n = el("span", { className: "stk" }); n.dataset.k = k; return stkFill(n); };
+
+const band = (lo, hi, cls = "") => el("i", { className: "band " + cls, style: `left:${lo * 100}%;width:${Math.max(hi - lo, .004) * 100}%` });
+const mark = (x, cls = "dot", txt = "") => el("i", { className: cls, style: `left:${x * 100}%`, textContent: txt });
+const track = (...kids) => el("div", { className: "track" }, kids);
+const row = (label, kids, value, tag = "div") => el(tag, { className: "row" }, el("span", {}, label), track(...kids), el("span", { className: "num" }, value));
+function seg(id, value, onpick) { for (const b of $("#" + id).children) { b.setAttribute("aria-pressed", b.dataset.v === value); b.onclick = () => onpick(b.dataset.v); } }
+function tween(node, to, fmt = f2) { const from = +node.dataset.v || 0, t0 = performance.now(); node.dataset.v = to;
+  const step = now => { const k = Math.min(1, (now - t0) / 600), e = 1 - (1 - k) ** 3; node.textContent = fmt(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+
+/* ---------- the schematic face: drawn once, re-pointed from landmarks on every frame ---------- */
+const curve = (p, closed) => { const n = p.length, g = i => p[closed ? (i + n) % n : Math.max(0, Math.min(n - 1, i))]; let d = `M${p[0].map(v => v.toFixed(1))}`;
+  for (let i = 0; i < (closed ? n : n - 1); i++) { const a = g(i - 1), b = g(i), c = g(i + 1), e = g(i + 2), r = v => v.toFixed(1);
+    d += `C${r(b[0] + (c[0] - a[0]) / 6)},${r(b[1] + (c[1] - a[1]) / 6)} ${r(c[0] - (e[0] - b[0]) / 6)},${r(c[1] - (e[1] - b[1]) / 6)} ${r(c[0])},${r(c[1])}`; }
+  return d + (closed ? "Z" : ""); };
+const lerp = (a, b, k) => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k];
+const add = (a, dx, dy) => [a[0] + dx, a[1] + dy];
+const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+let uid = 0;
+
+function makeFace(svg) {
+  const id = "f" + (++uid), E = {}, ix = D.face.points.index, paths = D.face.points.paths;
+  const mk = (n, tag, attrs = {}) => E[n] = sv(tag, attrs), grp = (attrs, ...k) => sv("g", attrs, ...k);
+  const clip = (n, ...kids) => sv("clipPath", { id: id + n }, ...kids);
+  const cpSkin = mk("cpSkin", "path"), cpEyeL = mk("cpEyeL", "path"), cpEyeR = mk("cpEyeR", "path");
+  const shading = grp({ "clip-path": `url(#${id}s)` },
+    mk("edge", "path", { class: "edge", "stroke-width": 11, filter: "url(#bl2)" }), mk("jaw", "path", { class: "edge", "stroke-width": 7, filter: "url(#bl2)", opacity: .7 }),
+    mk("forehead", "ellipse", { class: "hi", filter: "url(#bl4)", opacity: .35 }),
+    mk("cheekL", "ellipse", { fill: "#D77A82", opacity: .14, filter: "url(#bl4)" }), mk("cheekR", "ellipse", { fill: "#D77A82", opacity: .14, filter: "url(#bl4)" }),
+    mk("bonesL", "ellipse", { class: "hi", filter: "url(#bl2)", opacity: .28 }), mk("bonesR", "ellipse", { class: "hi", filter: "url(#bl2)", opacity: .28 }),
+    mk("socketL", "ellipse", { class: "shade", filter: "url(#bl2)", opacity: .2 }), mk("socketR", "ellipse", { class: "shade", filter: "url(#bl2)", opacity: .2 }),
+    mk("ridgeL", "ellipse", { class: "shade", filter: "url(#bl2)", opacity: .26 }), mk("ridgeR", "ellipse", { class: "shade", filter: "url(#bl2)", opacity: .26 }),
+    mk("noseShade", "path", { class: "shade", filter: "url(#bl1)", opacity: .34 }), mk("noseHi", "path", { class: "hi", filter: "url(#bl1)", opacity: .55, fill: "none", stroke: "#fff", "stroke-width": 1.8 }),
+    mk("tipHi", "ellipse", { class: "hi", filter: "url(#bl1)", opacity: .6 }), mk("tipShade", "ellipse", { class: "shade", filter: "url(#bl1)", opacity: .3 }),
+    mk("lipShade", "ellipse", { class: "shade", filter: "url(#bl2)", opacity: .2 }), mk("chinHi", "ellipse", { class: "hi", filter: "url(#bl2)", opacity: .35 }),
+    mk("hairline", "path", { fill: "none", stroke: "var(--hair)", "stroke-width": 5, filter: "url(#bl2)", opacity: .8 }));
+  const age = grp({ "clip-path": `url(#${id}s)`, class: "ageg" }, ...["fore1", "fore2", "crowL", "crowR", "bagL", "bagR", "nasoL", "nasoR"].map(n => mk(n, "path", { class: "age" })));
+  const eye = s => grp({}, mk("white" + s, "path", { class: "sclera" }),
+    grp({ "clip-path": `url(#${id}e${s})` }, mk("iris" + s, "circle", { fill: "url(#gIris)" }), mk("pup" + s, "circle", { class: "pupil" }), mk("spec" + s, "circle", { class: "spec", opacity: .9 }), mk("spec2" + s, "circle", { class: "spec", opacity: .5 }),
+      mk("lidSh" + s, "path", { fill: "none", stroke: "#1A1020", "stroke-width": 2.2, opacity: .25, filter: "url(#bl1)" })),
+    mk("up" + s, "path", { class: "ln", "stroke-width": 1.15 }), mk("lo" + s, "path", { class: "ln", "stroke-width": .4, opacity: .5 }), mk("crease" + s, "path", { class: "ln", "stroke-width": .45, opacity: .4 }));
+  const hairTex = [mk("sheen", "ellipse", { class: "hi", filter: "url(#bl2)", opacity: .22 }), mk("part", "path", { fill: "none", stroke: "#000", "stroke-width": .8, opacity: .28, "stroke-linecap": "round" })];
+  svg.replaceChildren(sv("defs", {}, clip("s", cpSkin), clip("eL", cpEyeL), clip("eR", cpEyeR)),
+    mk("hairBack", "path", { class: "hair" }), ...hairTex, mk("neck", "path", { class: "skin" }), mk("neckSh", "path", { fill: "url(#gNeck)" }), mk("cloth", "path", { class: "cloth" }),
+    mk("earL", "ellipse", { class: "skin" }), mk("earR", "ellipse", { class: "skin" }), mk("skin", "path", { class: "skin" }), shading, age,
+    mk("nostrilL", "ellipse", { fill: "#2A1A1E", opacity: .5 }), mk("nostrilR", "ellipse", { fill: "#2A1A1E", opacity: .5 }), mk("alae", "path", { class: "ln", "stroke-width": .5, opacity: .45 }),
+    eye("L"), eye("R"), mk("browL", "path", { class: "brow" }), mk("browR", "path", { class: "brow" }),
+    mk("lipU", "path", { class: "lipU" }), mk("lipL", "path", { class: "lipL" }), mk("lipHi", "ellipse", { fill: "#fff", opacity: .3, filter: "url(#bl1)" }), mk("mouth", "path", { class: "mouth" }));
+  const set = (n, o) => { for (const k in o) E[n].setAttribute(k, typeof o[k] === "number" ? +o[k].toFixed(2) : o[k]); };
+  const ell = (n, c, rx, ry, rot = 0) => set(n, { cx: c[0], cy: c[1], rx, ry, transform: rot ? `rotate(${rot} ${c[0].toFixed(1)} ${c[1].toFixed(1)})` : "" });
+  return { el: E, update(P) {
+    const at = i => P[ix.indexOf(i)], pts = k => paths[k].map(at), tr = at("trichion"), wL = at(234), wR = at(454), chin = at(152), jL = at(172), jR = at(397), mid = (a, b) => lerp(a, b, .5);
+    const oval = pts("oval"); oval[0] = tr; oval[1] = add(oval[1], 0, -6); oval[17] = add(oval[17], 0, -6);
+    const skin = curve(oval, true); set("skin", { d: skin }); set("cpSkin", { d: skin }); set("edge", { d: skin });
+    set("hairBack", { d: curve([[wL[0] * 1.16, wL[1] + 10], [wL[0] * 1.24, wL[1] - 14], [at(54)[0] * 1.34, tr[1] + 8], [at(54)[0] * .8, tr[1] - 9], [0, tr[1] - 16], [at(284)[0] * .8, tr[1] - 9], [at(284)[0] * 1.34, tr[1] + 8], [wR[0] * 1.24, wR[1] - 14], [wR[0] * 1.16, wR[1] + 10], [0, 4]], true) });
+    ell("sheen", [-6, tr[1] - 9], 22, 3.6, -8); set("part", { d: `M10,${tr[1] - 14}Q16,${tr[1] - 4} 14,${tr[1] + 3}` });
+    set("neck", { d: `M${jL[0] * .72},${jL[1] - 6}L${jL[0] * .66},70L${jR[0] * .66},70L${jR[0] * .72},${jR[1] - 6}Z` }); set("neckSh", { d: `M${jL[0] * .72},${jL[1] - 6}L${jL[0] * .66},70L${jR[0] * .66},70L${jR[0] * .72},${jR[1] - 6}Z` });
+    set("cloth", { d: "M-64,74C-60,64-42,60-22,58L22,58C42,60,60,64,64,74Z" });
+    ell("earL", add(wL, -2.2, 1), 3.4, 6.5); ell("earR", add(wR, 2.2, 1), 3.4, 6.5);
+    set("jaw", { d: curve([jL, at(150), chin, at(379), jR].map(p => add(p, 0, -1)), false) });
+    ell("forehead", [0, tr[1] * .62], 20, 9);
+    const eL = at(145), eR = at(374), ewL = dist(at(33), at(133)), ewR = dist(at(263), at(362)), bL = mid(at(46), at(107)), bR = mid(at(276), at(336)), al = at(98), ar = at(327);
+    ell("cheekL", [wL[0] * .68 + al[0] * .32, (eL[1] + at(61)[1]) / 2 + 1], 11, 9); ell("cheekR", [wR[0] * .68 + ar[0] * .32, (eR[1] + at(291)[1]) / 2 + 1], 11, 9);
+    ell("bonesL", add(lerp(wL, eL, .6), 0, 1), 9, 3.2, -22); ell("bonesR", add(lerp(wR, eR, .6), 0, 1), 9, 3.2, 22);
+    ell("socketL", mid(bL, eL), ewL * .75, 4); ell("socketR", mid(bR, eR), ewR * .75, 4);
+    ell("ridgeL", add(bL, 0, 2.4), ewL * .8, 2.2); ell("ridgeR", add(bR, 0, 2.4), ewR * .8, 2.2);
+    set("noseShade", { d: curve([at(168), at(6), at(197), at(195)].map(p => add(p, 2.8, 0)).concat([add(ar, 3.4, 1), add(at(2), 3, 1.4), add(at(195), -.4, 0)]), true) });
+    set("noseHi", { d: curve([at(168), at(6), at(197), at(195)].map(p => add(p, -1.4, 0)), false) });
+    ell("tipHi", add(at(1), -.4, -.6), 2.4, 1.7); ell("tipShade", add(at(2), 0, 1.6), 7, 1.8);
+    set("alae", { d: curve(pts("noseBase"), false) });
+    ell("nostrilL", add(lerp(al, at(2), .5), 0, -.2), 2.1, 1); ell("nostrilR", add(lerp(ar, at(2), .5), 0, -.2), 2.1, 1);
+    ell("lipShade", add(at(17), 0, 3.2), 8.5, 2); ell("chinHi", add(chin, 0, -6.5), 7, 3);
+    set("hairline", { d: curve([add(at(54), 1, 0), add(at(67), 0, -6), add(tr, 0, 1), add(at(297), 0, -6), add(at(284), -1, 0)], false) });
+    for (const [s, ew, e, bw, brow, tag] of [["L", ewL, "L", 0, bL, ""], ["R", ewR, "R", 0, bR, ""]]) {
+      const o = pts("eye" + s), cx = at(s === "L" ? 468 : 473), r = ew * .25, up = s === "L" ? [33, 160, 159, 158, 133] : [263, 387, 386, 385, 362].reverse(), lo = (s === "L" ? [133, 153, 145, 144, 33] : [362, 380, 374, 373, 263]).map(at);
+      set("cpEye" + s, { d: curve(o, true) }); set("white" + s, { d: curve(o, true) });
+      set("iris" + s, { cx: cx[0], cy: cx[1], r }); set("pup" + s, { cx: cx[0], cy: cx[1], r: r * .45 }); set("spec" + s, { cx: cx[0] - r * .32, cy: cx[1] - r * .4, r: r * .24 }); set("spec2" + s, { cx: cx[0] + r * .3, cy: cx[1] + r * .38, r: r * .12 });
+      const upper = up.map(at); set("up" + s, { d: curve(upper, false) }); set("lo" + s, { d: curve(lo, false) }); set("lidSh" + s, { d: curve(upper, false) });
+      set("crease" + s, { d: curve(upper.map(p => add(p, 0, -2.4)), false) });
+    }
+    set("browL", { d: curve(pts("browL"), true) }); set("browR", { d: curve(pts("browR"), true) });
+    const oL = [61, 39, 37, 0, 267, 269, 291].map(at), iT = [308, 312, 13, 82, 78].map(at), iB = [78, 87, 14, 317, 308].map(at), oB = [291, 405, 314, 17, 84, 181, 61].map(at);
+    set("lipU", { d: curve(oL.concat(iT), true) }); set("lipL", { d: curve(iB.concat(oB.slice(1, -1)), true) });
+    set("mouth", { d: curve([at(61), at(78), at(82), at(13), at(312), at(308), at(291)], false) });
+    ell("lipHi", add(at(17), 0, -2.6), 3.2, .9);
+    // age lines (opacity driven by --age)
+    const fh = tr[1] * .55;
+    set("fore1", { d: `M-16,${fh}Q0,${fh - 2.2} 16,${fh}` }); set("fore2", { d: `M-12,${fh + 5}Q0,${fh + 3} 12,${fh + 5}` });
+    for (const [s, w, sd] of [["L", at(33), -1], ["R", at(263), 1]]) set("crow" + s, { d: `M${w[0] + sd * 1.5},${w[1]}l${sd * 4},-2M${w[0] + sd * 1.5},${w[1] + 1}l${sd * 4.5},1M${w[0] + sd * 1.5},${w[1] + 2}l${sd * 3.6},3.6` });
+    set("bagL", { d: curve([add(at(33), 2, 3.4), add(at(145), 0, 3.6), add(at(133), -2, 3.4)], false) }); set("bagR", { d: curve([add(at(362), 2, 3.4), add(at(374), 0, 3.6), add(at(263), -2, 3.4)], false) });
+    set("nasoL", { d: curve([add(al, -2.5, -1), add(lerp(al, at(61), .5), -4, 1), add(at(61), -3.4, 2)], false) }); set("nasoR", { d: curve([add(ar, 2.5, -1), add(lerp(ar, at(291), .5), 4, 1), add(at(291), 3.4, 2)], false) });
+  } };
+}
+
+/* ---------- shapes from the data ---------- */
+function shape(set, z) { const F = D.face.sets[set], P = F.mean.map(p => [p[0] * 100, p[1] * 100]);
+  for (const k in z) if (z[k]) F.morph[k].forEach((m, i) => { P[i][0] += z[k] * m[0] * 100; P[i][1] += z[k] * m[1] * 100; });
+  return P; }
+function named(P) { const ix = D.face.points.index, m = D.face.points.model, q = {}, mid = (a, b) => a.map((v, i) => (v + b[i]) / 2);
+  for (const k in m) q[k] = P[ix.indexOf(m[k])]; q.trichion = P[ix.indexOf("trichion")]; q.glabella = P[ix.indexOf("glabella")];
+  q.stomion = mid(q.lipUpper, q.lipLower); q.pupils = mid(q.irisL, q.irisR); q.browL = mid(q.browOuterL, q.browInnerL); q.browR = mid(q.browOuterR, q.browInnerR); return q; }
+
+/* ---------- ladder (hero) ---------- */
+function drawLadder() {
+  const R = D.remove, K = D.lockbox, res = K.scut.result, exp = Object.values(K.scut.expected_tier2_boosting), expm = exp.reduce((a, b) => a + b) / exp.length;
+  const held = res ? Object.values(res).reduce((a, r) => a + r[0], 0) / Object.keys(res).length : null;
+  const val = [R.none.pooled, R.source.pooled, R["source,age,capture"].pooled];
+  const rung = (i, v) => el("div", { className: "rung r" + (i + 1) }, el("b", {}, t.ladder[i], stkEl(["dev", "dev", "exp"][i])), el("div", { className: "num" }, f2(v)), el("small", {}, t.ladder_sub[i]));
+  $("#ladder").replaceChildren(...val.map((v, i) => rung(i, v)),
+    el("div", { className: "rung r4" + (res ? " open" : "") },
+      el("b", {}, t.ladder[3], stkEl("conf")),
+      el("div", { className: "slot" }, held == null ? el("i", { className: "sealdot" }, "?") : null, el("span", { className: "num" + (held == null ? " closed" : "") }, held == null ? t.held_slot : f2(held))),
+      el("small", {}, t.ladder_sub[3] + " · " + t.held_exp(f2(expm), f2(K.scut.downgrade_below_mean)))));
+}
+
+/* ---------- 3D head: MakeHuman base mesh (CC0) warped by the page's landmarks; three.js r128. Falls back to the drawn face. ---------- */
+const GL = { ok: false, views: [], renderer: null, W: 0, H: 0, last: 0 };
+const CLAY = { CM: 0xd6c6b4, CF: 0xdccbb9, AM: 0xd4c2a6, AF: 0xdac8ad };
+const TINTS = [0xa9b7a8, 0xc2a57a, 0x9fa9ad, 0xb79b8c, 0x8fa39a, 0xb8ae98];
+let HD;
+const u8 = (s, T) => { const b = atob(s), a = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return new T(a.buffer); };
+
+function initHead() {
+  const H = window.HEAD, n = H.n, q = u8(H.pos, Int16Array), P = new Float32Array(n * 3), [s, tx, ty] = H.T;
+  for (let i = 0; i < n * 3; i++) P[i] = (q[i] + 32767) * H.sc + H.lo[i % 3];
+  const tris = [], groups = [];
+  ["head", "eyeL", "eyeR"].forEach(k => { const a = u8(H[k], Uint16Array), st = tris.length; for (let i = 0; i < a.length; i += 4) tris.push(a[i], a[i + 1], a[i + 2], a[i], a[i + 2], a[i + 3]); groups.push([st, tris.length - st, a]); });
+  // thin-plate warp of the frontal plane. Nodes: landmark control vertices (they move) + anchors (they stay). M maps control displacements to every vertex.
+  const N = H.ctrl.length, nodes = H.ctrl.concat(H.anch), K = nodes.length, lam = .01, X = nodes.map(i => [P[i * 3], P[i * 3 + 1]]);
+  const phi = (a, b) => { const r2 = (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2; return r2 > 0 ? .5 * r2 * Math.log(r2) : 0; };
+  const m = K + 3, A = Array.from({ length: m }, () => new Float64Array(2 * m));
+  for (let i = 0; i < K; i++) { for (let j = 0; j < K; j++) A[i][j] = phi(X[i], X[j]) + (i === j ? lam : 0); A[i][K] = 1; A[i][K + 1] = X[i][0]; A[i][K + 2] = X[i][1]; A[K][i] = 1; A[K + 1][i] = X[i][0]; A[K + 2][i] = X[i][1]; }
+  for (let i = 0; i < m; i++) A[i][m + i] = 1;
+  for (let c = 0; c < m; c++) {
+    let p = c; for (let r = c + 1; r < m; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]];
+    const d = A[c][c]; for (let j = 0; j < 2 * m; j++) A[c][j] /= d;
+    for (let r = 0; r < m; r++) if (r !== c) { const f = A[r][c]; if (f) for (let j = 0; j < 2 * m; j++) A[r][j] -= f * A[c][j]; }
+  }
+  const M = new Float32Array(n * N);
+  for (let v = 0; v < n; v++) {
+    const x = [P[v * 3], P[v * 3 + 1]], k = new Float64Array(K); for (let i = 0; i < K; i++) k[i] = phi(x, X[i]);
+    for (let j = 0; j < N; j++) { let a = A[K][m + j] + A[K + 1][m + j] * x[0] + A[K + 2][m + j] * x[1]; for (let i = 0; i < K; i++) a += k[i] * A[i][m + j]; M[v * N + j] = a; }
+  }
+  // front-facing vertices (neutral): used to pin overlay lines onto the surface
+  const nz = new Float32Array(n), qd = groups[0][2];
+  for (let i = 0; i < qd.length; i += 4) { const o = [qd[i], qd[i + 1], qd[i + 2], qd[i + 3]], z = (P[o[1] * 3] - P[o[0] * 3]) * (P[o[3] * 3 + 1] - P[o[0] * 3 + 1]) - (P[o[1] * 3 + 1] - P[o[0] * 3 + 1]) * (P[o[3] * 3] - P[o[0] * 3]); o.forEach(v => nz[v] += z); }
+  const front = []; for (let v = 0; v < n; v++) if (nz[v] > 1e-4) front.push(v);
+  const ref = Object.values(D.face.sets).map(f => f.mean), ix = D.face.points.index;
+  const R = i => { const j = ix.indexOf(i); return [ref.reduce((a, f) => a + f[j][0], 0) / ref.length * 100, ref.reduce((a, f) => a + f[j][1], 0) / ref.length * 100]; };
+  const surf = (lx, ly) => { const x = s * lx + tx, y = -s * ly + ty; let b = 0, bd = 1e9; for (const v of front) { const d = (P[v * 3] - x) ** 2 + (P[v * 3 + 1] - y) ** 2; if (d < bd) { bd = d; b = v; } } return b; };
+  return { n, P, tris, groups, M, N, s, ctrl: H.ctrl, ix, R, surf, eyeIdx: [1, 2].map(g => [...new Set(groups[g][2])]) };
+}
+
+function makeView3D(host, { sway = 3 } = {}) {
+  const T = THREE, h = HD, cv = el("canvas"), ov = sv("svg", { class: "ov" }), ctx = cv.getContext("2d");
+  const pos = new Float32Array(h.P), geo = new T.BufferGeometry(), attr = new T.BufferAttribute(pos, 3).setUsage(T.DynamicDrawUsage);
+  geo.setAttribute("position", attr); geo.setIndex(h.tris); h.groups.forEach(([st, n], i) => geo.addGroup(st, n, i ? 1 : 0)); geo.computeVertexNormals();
+  const clay = new T.MeshStandardMaterial({ color: CLAY.CM, roughness: .92, metalness: 0 }), glaze = new T.MeshStandardMaterial({ color: 0xe9e3d8, roughness: .45, metalness: 0 });
+  const scene = new T.Scene(), rig = new T.Group(), shift = new T.Group(), pivot = [0, 7.2, .45];
+  rig.position.set(...pivot); shift.position.set(-pivot[0], -pivot[1], -pivot[2]);
+  const plinth = new T.Mesh(new T.CylinderGeometry(1.02, 1.14, .55, 56), new T.MeshStandardMaterial({ color: 0x8f8a80, roughness: 1 })); plinth.position.set(0, 5.69, .12);
+  shift.add(new T.Mesh(geo, [clay, glaze]), plinth); rig.add(shift); scene.add(rig);
+  // iris and pupil: spherical caps on each eyeball, following its centre and scale
+  const eyes = h.eyeIdx.map(idx => {
+    const c = [0, 1, 2].map(k => idx.reduce((a, v) => a + h.P[v * 3 + k], 0) / idx.length), r = idx.reduce((a, v) => a + Math.hypot(h.P[v * 3] - c[0], h.P[v * 3 + 1] - c[1], h.P[v * 3 + 2] - c[2]), 0) / idx.length;
+    const cap = (a, col) => { const g = new T.SphereGeometry(r * 1.012, 24, 8, 0, Math.PI * 2, 0, a); g.rotateX(Math.PI / 2); return new T.Mesh(g, new T.MeshStandardMaterial({ color: col, roughness: .6, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })); };
+    const iris = cap(.52, 0x5d6b6c); iris.add(cap(.24, 0x1d2222)); shift.add(iris); return { idx, r, iris };
+  });
+  scene.add(new T.HemisphereLight(0xffffff, 0x6f6a62, .8));
+  const key = new T.DirectionalLight(0xfff1e0, 1.05), fill = new T.DirectionalLight(0xe4e9ee, .32), rim = new T.DirectionalLight(0xffffff, .9);
+  key.position.set(-3, 5, 6); fill.position.set(4, 1, 4); rim.position.set(3.5, 4, -5); scene.add(key, fill, rim);
+  const cam = new T.PerspectiveCamera(17, 128 / 146, 1, 60); cam.position.set(0, 7.0, 11.4); cam.lookAt(0, 6.95, 0);
+  host.prepend(cv); host.append(ov);
+  const v = { host, ov, colT: new T.Color(CLAY.CM), lm3: [], yaw: 0, pitch: 0, yawT: 0, pitchT: 0, drag: false, visible: false, dirty: true, tint: 0, tintT: 0, onFrame: null, w: 0, h: 0, t0: Math.random() * 6 };
+  const find = k => h.ctrl[h.ix.indexOf(k)];
+  v.setShape = d => { // d: 94 x [dx, dy], landmark displacement in page units
+    const N = h.N, M = h.M, dx = new Float32Array(N), dy = new Float32Array(N); for (let j = 0; j < N; j++) { dx[j] = h.s * d[j][0]; dy[j] = -h.s * d[j][1]; }
+    for (let i = 0; i < h.n; i++) { let a = 0, b = 0; const o = i * N; for (let j = 0; j < N; j++) { const m = M[o + j]; a += m * dx[j]; b += m * dy[j]; } pos[i * 3] = h.P[i * 3] + a; pos[i * 3 + 1] = h.P[i * 3 + 1] + b; pos[i * 3 + 2] = h.P[i * 3 + 2]; }
+    // depth follows the face's overall stretch gently, so relief stays plausible
+    const sx = Math.abs(pos[find(454) * 3] - pos[find(234) * 3]) / Math.abs(h.P[find(454) * 3] - h.P[find(234) * 3]);
+    const sy = Math.abs(pos[find("trichion") * 3 + 1] - pos[find(152) * 3 + 1]) / Math.abs(h.P[find("trichion") * 3 + 1] - h.P[find(152) * 3 + 1]), zs = (sx * sy) ** .25;
+    if (Math.abs(zs - 1) > 1e-4) for (let i = 0; i < h.n; i++) pos[i * 3 + 2] = .6 + (h.P[i * 3 + 2] - .6) * zs;
+    attr.needsUpdate = true; geo.computeVertexNormals();
+    v.lm3 = h.ctrl.map(i => [pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]]); v.pos = pos;
+    eyes.forEach(e => { const c = [0, 1, 2].map(k => e.idx.reduce((a, i) => a + pos[i * 3 + k], 0) / e.idx.length), r = e.idx.reduce((a, i) => a + Math.hypot(pos[i * 3] - c[0], pos[i * 3 + 1] - c[1], pos[i * 3 + 2] - c[2]), 0) / e.idx.length; e.iris.position.set(...c); e.iris.scale.setScalar(r / e.r); });
+    v.dirty = true;
+  };
+  v.setColor = (c, glide) => { v.colT.set(c); if (!glide) clay.color.copy(v.colT); v.dirty = true; };
+  v.proj = p => { const w = new T.Vector3(...p).applyMatrix4(shift.matrixWorld).project(cam); return [(w.x + 1) / 2 * v.w, (1 - w.y) / 2 * v.h]; };
+  v.vert = i => [pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]];
+  v.setShape(h.ix.map(() => [0, 0]));
+  const cvs = host.querySelector("canvas");
+  cvs.addEventListener("pointerdown", e => { v.drag = true; v.lx = e.clientX; v.ly = e.clientY; cvs.setPointerCapture(e.pointerId); });
+  cvs.addEventListener("pointermove", e => { if (!v.drag) return; v.yawT = Math.max(-25, Math.min(25, v.yawT + (e.clientX - v.lx) * .25)); v.pitchT = Math.max(-12, Math.min(12, v.pitchT + (e.clientY - v.ly) * .12)); v.lx = e.clientX; v.ly = e.clientY; });
+  const up = () => { v.drag = false; }; cvs.addEventListener("pointerup", up); cvs.addEventListener("pointercancel", up);
+  new IntersectionObserver(es => { v.visible = es[0].isIntersecting; v.dirty = true; }).observe(host);
+  v.draw = now => {
+    const w = host.clientWidth, hh = host.clientHeight; if (!w || !hh) return;
+    if (!v.drag) { v.yawT *= .985; v.pitchT *= .985; }
+    const still = matchMedia("(prefers-reduced-motion:reduce)").matches, t = still ? 0 : now / 1000 + v.t0;
+    const ty = v.yawT + Math.sin(t * .55) * sway, tp = v.pitchT + Math.sin(t * .4) * sway * .25;
+    const moving = Math.abs(ty - v.yaw) + Math.abs(tp - v.pitch) > .01;
+    v.yaw += (ty - v.yaw) * .1; v.pitch += (tp - v.pitch) * .1; if (Math.abs(clay.color.r - v.colT.r) + Math.abs(clay.color.g - v.colT.g) + Math.abs(clay.color.b - v.colT.b) > .003) { clay.color.lerp(v.colT, .08); v.dirty = true; }
+    v.tint += (v.tintT - v.tint) * .06; if (Math.abs(v.tintT - v.tint) > .003) v.dirty = true;
+    if (!v.dirty && !moving) return; v.dirty = false;
+    if (v.w !== w || v.h !== hh) { v.w = w; v.h = hh; ov.setAttribute("viewBox", `0 0 ${w} ${hh}`); }
+    rig.rotation.set(v.pitch * Math.PI / 180, v.yaw * Math.PI / 180, 0); rig.updateMatrixWorld(true);
+    const k = now / 4200, i = Math.floor(k), f = k - i, e = f * f * (3 - 2 * f), c = new T.Color(TINTS[i % 6]).lerp(new T.Color(TINTS[(i + 1) % 6]), e);
+    const tc = new T.Color(0xffffff).lerp(c, v.tint); rim.color.copy(tc); rim.intensity = .55 + .6 * v.tint; key.color.set(0xfff1e0).lerp(tc, v.tint * .18);
+    const dpr = Math.min(devicePixelRatio || 1, 1.5), W = Math.round(w * dpr), H = Math.round(hh * dpr), r = GL.renderer;
+    if (cvs.width !== W || cvs.height !== H) { cvs.width = W; cvs.height = H; }
+    if (W > GL.W || H > GL.H) { GL.W = Math.max(W, GL.W); GL.H = Math.max(H, GL.H); r.setSize(GL.W, GL.H, false); }
+    r.setViewport(0, 0, W, H); cam.aspect = w / hh; cam.updateProjectionMatrix(); r.render(scene, cam);
+    ctx.clearRect(0, 0, W, H); ctx.drawImage(r.domElement, 0, GL.H - H, W, H, 0, 0, W, H); v.onFrame?.(v);
+  };
+  GL.views.push(v); return v;
+}
+function glLoop(now) {
+  requestAnimationFrame(glLoop);
+  if (document.hidden || now - GL.last < 30) return; // ~30 fps is plenty for a slow sway
+  GL.last = now; for (const v of GL.views) if (v.visible) v.draw(now);
+}
+function glStart() { try { GL.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); GL.renderer.setClearColor(0, 0); GL.ok = true; requestAnimationFrame(glLoop); } catch { GL.ok = false; } }
+
+/* ---------- 01 subtract ---------- */
+function remKey() { const k = ["source", "age", "capture"].filter(l => S.removed.has(l)).join(","); return k || "none"; }
+
+function buildStage3D() {
+  const svg = $("#stage"), host = svg.parentElement, box = el("div", { className: "v3" }, el("div", { className: "bands" }, ...TINTS.map(c => el("i", { style: "background:#" + c.toString(16).padStart(6, "0") }))));
+  svg.style.display = "none"; host.prepend(box);
+  const view = makeView3D(box, { sway: 3 }), R = HD.R, line = pts => pts.map(([x, y]) => HD.surf(x, y)), cr = (x0, x1, y, b, n = 9) => Array.from({ length: n }, (_, i) => [x0 + (x1 - x0) * i / (n - 1), y - b * (1 - (2 * i / (n - 1) - 1) ** 2)]);
+  const fh = R("trichion")[1] * .55, o = (i, dx, dy) => { const p = R(i); return [p[0] + dx, p[1] + dy]; }, q3 = (a, b, c) => Array.from({ length: 7 }, (_, i) => { const k = i / 6; return [0, 1].map(j => (1 - k) ** 2 * a[j] + 2 * k * (1 - k) * b[j] + k * k * c[j]); });
+  const crow = (i, sd) => [[1.5, 0, 5.5, -2], [1.5, 1, 6, 2], [1.5, 2, 5.1, 5.6]].map(([a, b, c, d]) => line([o(i, sd * a, b), o(i, sd * (a + c) / 2, (b + d) / 2), o(i, sd * c, d)]));
+  const lines = [line(cr(-16, 16, fh, 2.2)), line(cr(-12, 12, fh + 5, 1.6)), ...crow(33, -1), ...crow(263, 1), line(q3(o(33, 2, 3.4), o(145, 0, 3.6), o(133, -2, 3.4))), line(q3(o(362, 2, 3.4), o(374, 0, 3.6), o(263, -2, 3.4))),
+    line(q3(o(98, -2.5, -1), o(61, 1, -6), o(61, -3.4, 2))), line(q3(o(327, 2.5, -1), o(291, -1, -6), o(291, 3.4, 2)))];
+  const age = sv("g", { class: "age3" }, ...lines.map(() => sv("path", {}))), bare = sv("g", { class: "bare3" });
+  view.ov.append(age, bare);
+  box.append(sv("svg", { class: "capl", viewBox: "0 0 128 146", preserveAspectRatio: "none" }, sv("rect", { width: 128, height: 146, fill: "url(#gLight)" }), sv("rect", { width: 128, height: 146, fill: "url(#gVig)" }), sv("rect", { width: 128, height: 146, filter: "url(#grain)", opacity: .5, style: "mix-blend-mode:multiply" })));
+  view.onFrame = v => {
+    if (!S.removed.has("age")) lines.forEach((l, i) => age.children[i].setAttribute("d", curve(l.map(k => v.proj(v.vert(k))), false)));
+    if (S.removed.size < 3) { if (bare.firstChild) bare.replaceChildren(); return; }
+    const q = named(v.lm3), pr = p => v.proj(p), kids = ["zygionL-zygionR", "trichion-menton", "eyeInnerL-eyeInnerR", "alarL-alarR", "mouthL-mouthR", "gonionL-gonionR"].map(s => { const [a, b] = s.split("-"), A = pr(q[a]), B = pr(q[b]); return sv("line", { x1: A[0], y1: A[1], x2: B[0], y2: B[1] }); });
+    for (const k in D.face.points.model) { const p = pr(q[k]); kids.push(sv("circle", { cx: p[0], cy: p[1], r: 2.4 })); }
+    bare.replaceChildren(...kids);
+  };
+  stageView = view;
+}
+function buildStage() {
+  if (GL.ok) return buildStage3D();
+  const svg = $("#stage"), F = makeFace(svg), pts = D.face.points.index;
+  const tints = ["#A9B7A8", "#C2A57A", "#9FA9AD", "#B79B8C", "#8FA39A", "#B8AE98"];
+  const bands = sv("g", { class: "bands cap-src" }, ...tints.map((c, i) => sv("rect", { x: -64 + i * 128 / 6, y: -72, width: 128 / 6 + .3, height: 146, fill: c })));
+  const capl = sv("g", { class: "cap-l" }, sv("rect", { x: -64, y: -72, width: 128, height: 146, fill: "url(#gLight)" }), sv("rect", { x: -64, y: -72, width: 128, height: 146, fill: "url(#gVig)" }),
+    sv("rect", { x: -64, y: -72, width: 128, height: 146, filter: "url(#grain)", opacity: .55, style: "mix-blend-mode:multiply" }));
+  const bare = sv("g", { class: "bare" });
+  svg.prepend(sv("rect", { x: -64, y: -72, width: 128, height: 146, fill: "var(--stage)" }), bands);
+  svg.append(capl, bare);
+  stageFace = { F, bare };
+  stageFace.update = () => { const P = shape("CM 10k_US", {}); F.update(P); const q = named(P);
+    bare.replaceChildren(...["zygionL-zygionR", "trichion-menton", "eyeInnerL-eyeInnerR", "alarL-alarR", "mouthL-mouthR", "gonionL-gonionR"].map(s => { const [a, b] = s.split("-"); return sv("line", { x1: q[a][0], y1: q[a][1], x2: q[b][0], y2: q[b][1] }); }),
+      ...Object.values(q).map(p => sv("circle", { cx: p[0], cy: p[1], r: .8 }))); };
+  stageFace.update();
+}
+function drawRemove() {
+  const r = D.remove[remKey()], lev = ["source", "age", "capture"];
+  $("#chips").replaceChildren(...lev.map(l => { const on = S.removed.has(l);
+    const b = el("button", { className: "chip", onclick: () => { on ? S.removed.delete(l) : S.removed.add(l); drawRemove(); } }, el("i", {}, on ? "×" : ""), el("span", {}, t.lever[l])); b.setAttribute("aria-pressed", on); return b; }));
+  $("#keys").replaceChildren(...lev.map(l => el("span", { className: S.removed.has(l) ? "off" : "" }, el("i", { style: `background:${{ source: "linear-gradient(90deg,#A9B7A8,#C2A57A,#9FA9AD)", age: "repeating-linear-gradient(0deg,var(--shade) 0 1px,transparent 1px 4px)", capture: "radial-gradient(circle,transparent 30%,var(--ink))" }[l]}` }), t.keys[l])));
+  { const sn = $("#remStat"); sn.dataset.k = S.removed.has("age") || S.removed.has("capture") ? "exp" : "dev"; stkFill(sn); }
+  const st = $("#stage").parentElement.style; if (stageView) stageView.tintT = S.removed.has("source") ? 0 : 1; st.setProperty("--src", S.removed.has("source") ? 0 : 1); st.setProperty("--age", S.removed.has("age") ? 0 : .5); st.setProperty("--cap", S.removed.has("capture") ? 0 : 1); st.setProperty("--bare", S.removed.size === 3 ? 1 : 0);
+  tween($("#remR"), r.pooled);
+  $("#was").textContent = S.removed.size ? t.was(f2(D.remove.none.pooled)) : "";
+  $("#remTrack").replaceChildren(band(r.ci[0], r.ci[1]), mark(r.pooled, "dot"), mark(D.remove.none.pooled, "tick"));
+  $("#remState").replaceChildren(...(S.removed.size ? [...S.removed] : ["none"]).concat(S.removed.size && !S.removed.has("source") ? ["none"] : []).map(k => el("li", {}, t.st[k])));
+  $("#remSets").replaceChildren(...(r.sets ? Object.entries(r.sets).map(([s, v]) => row(name(D.set_labels[s]), [mark(D.remove.source.sets[s], "dot small"), mark(v, "dot")], f2(v)))
+    : [el("p", { className: "dim", style: "font-size:14px" }, t.mixed)]));
+  const on = [...S.removed];
+  const qs = D.quotes.map((q, i) => ({ ...q, i })).filter(q => on.includes(q.lever) || q.lever === "all").slice(0, 4);
+  $("#quotes").replaceChildren(...qs.map(q => { const ru = S.lang === "ru", shown = S.orig.has(q.i);
+    return el("blockquote", { className: "quote" },
+      el("div", { className: "meta" }, el("span", { className: "kind " + q.kind }, t.kind[q.kind]), q.date + " · " + q.src),
+      el(q.paraphrased ? "p" : "q", { lang: ru ? "ru" : "en" }, ru ? q.ru : q.en),
+      ru && !q.paraphrased ? el("div", { className: "tr" }, el("span", { className: "tag" }, t.translated), el("button", { className: "link", onclick: () => { shown ? S.orig.delete(q.i) : S.orig.add(q.i); drawRemove(); } }, shown ? t.hideOrig : t.showOrig)) : null,
+      ru && shown ? el("q", { className: "orig", lang: "en" }, q.en) : null); }));
+  $("#facts").replaceChildren(...D.remove_notes.filter(n => !on.length || on.includes(n.lever)).map(n => el("li", {}, el("span", { className: "num" }, n.value), el("span", {}, name(n)))));
+}
+
+/* ---------- 02 correlation views ---------- */
+function drawSets() {
+  seg("fam", S.fam, v => { S.fam = v; drawSets(); });
+  $("#setRows").replaceChildren(...Object.entries(D.sets).map(([s, v]) => { const m = v[S.fam];
+    const b = row(name(D.set_labels[s]), [band(m.ci[0], m.ci[1]), mark(m.r)], f2(m.r), "button"); b.setAttribute("aria-pressed", s === S.set); b.onclick = () => { S.set = s; drawSets(); }; return b; }));
+  const v = D.sets[S.set], m = v[S.fam], ax = D.meta.density_axes, n = ax.cells, W = 320, c = W / n;
+  const X = x => (x - ax.x[0]) / (ax.x[1] - ax.x[0]) * W, Y = y => W - (y - ax.y[0]) / (ax.y[1] - ax.y[0]) * W;
+  const max = Math.max(...m.grid.flat()), g = $("#heat"); g.replaceChildren();
+  m.grid.forEach((line, j) => line.forEach((k, i) => k && g.append(sv("rect", { class: "cell", x: i * c + .5, y: W - (j + 1) * c + .5, width: c - 1, height: c - 1, rx: 2, opacity: (.08 + .72 * Math.sqrt(k / max)).toFixed(2) }))));
+  g.append(sv("line", { class: "id", x1: X(-2.4), y1: Y(-2.4), x2: X(2.4), y2: Y(2.4) }), sv("line", { class: "ax", x1: 0, y1: W, x2: W, y2: W }), sv("line", { class: "ax", x1: 0, y1: 0, x2: 0, y2: W }));
+  for (const v of [-2, 0, 2]) g.append(sv("text", { x: X(v), y: W + 14, "text-anchor": "middle" }, f2(v).replace(".00", "")), sv("text", { x: -6, y: Y(v) + 3, "text-anchor": "end" }, f2(v).replace(".00", "")));
+  g.append(sv("text", { x: W, y: W + 28, "text-anchor": "end" }, t.ax_x), sv("text", { x: -22, y: 4, transform: "rotate(-90 -22 4)", "text-anchor": "end" }, t.ax_y));
+  for (const [px, my, h, lo, hi] of m.bins) g.append(sv("line", { class: "p", x1: X(px), x2: X(px), y1: Y(lo), y2: Y(hi) }), sv("line", { class: "c", x1: X(px), x2: X(px), y1: Y(my - h), y2: Y(my + h) }), sv("circle", { cx: X(px), cy: Y(my), r: 4.5 }));
+  $("#setNote").textContent = t.setNote(v.n, f2(m.r), f2(m.ci[0]), f2(m.ci[1]), f2(m.rho));
+}
+
+/* ---------- 03 clusters ---------- */
+function drawClusters() {
+  const defs = Object.fromEntries(D.cluster_defs.map(d => [d.id, d])), list = [...D.clusters].sort((a, b) => b.share - a.share), top = list[0].share;
+  S.cluster ??= list[0].id;
+  $("#clList").replaceChildren(...list.map(c => { const d = defs[c.id];
+    const b = el("button", { className: "cl", onclick: () => { S.cluster = c.id; drawClusters(); } }, el("span", {}, name(d)), el("i", { className: "bar " + (d.kind === "image" ? "img" : "") }, el("i", { style: `width:${c.share / top * 100}%` })), el("span", { className: "num" }, pc(c.share)));
+    b.setAttribute("aria-pressed", c.id === S.cluster); return b; }));
+  const c = list.find(c => c.id === S.cluster), d = defs[c.id];
+  $("#clDetail").replaceChildren(el("div", { className: "cap" }, t.n_feat(c.features.length) + " · " + (d.kind === "image" ? t.lg_img : t.lg_geo)), el("h2", { style: "font-size:26px;margin:6px 0 2px" }, name(d)),
+    el("p", {}, el("b", { className: "num", style: "font-size:20px" }, pc(c.share)), " " + t.share_of, el("span", { className: "dim" }, ` · ${t.lost} ${c.drop.toFixed(3)}`)),
+    el("div", { className: "feat cap", style: "border:0" }, el("span", {}, ""), el("span", {}, t.inside), el("span", { style: "text-align:right" }, "ρ")),
+    ...[...c.features].sort((a, b) => b.within - a.within).map(f => el("div", { className: "feat" },
+      el("span", {}, name(D.feature_labels[f.id]), el("small", { className: "dim", style: "display:block" }, `${t.dir} ${f.rho >= 0 ? t.up : t.down}`)),
+      el("i", { className: "bar " + (d.kind === "image" ? "img" : "") }, el("i", { style: `width:${f.within * 100}%` })), el("span", { className: "num" }, sg(f.rho)))));
+  $("#common").replaceChildren(...Object.keys(D.set_labels).map(s => [s, D.commonality[s]]).map(([s, v]) => { const p = k => Math.max(v[k][0], 0), sh = p("G+Q") + p("G+A") + p("Q+A") + p("G+Q+A"), all = p("G") + p("Q") + p("A") + sh;
+    const w = x => `width:${x / .6 * 100}%`;
+    return el("div", { className: "row" }, el("span", {}, name(D.set_labels[s])), el("div", { className: "stack" }, el("i", { className: "g", style: w(p("G")) }), el("i", { className: "sh", style: w(sh) }), el("i", { className: "q", style: w(p("Q")) }), el("i", { className: "a", style: w(p("A")) })), el("span", { className: "num" }, all.toFixed(2))); }));
+}
+
+/* ---------- 04 face lab ---------- */
+const KIND = { pct: "wide-h third-upper third-mid third-low bridge-len tip-shift cupid pupil-mouth corners", deg: "canthal-l canthal-r brow-tilt-l brow-tilt-r nostril-l nostril-r jaw-angle-l jaw-angle-r jaw-slope-l jaw-slope-r ala-jaw" };
+const TILT = "canthal-l canthal-r brow-tilt-l brow-tilt-r nostril-l nostril-r jaw-slope-l jaw-slope-r";
+const LINES = { "face-wh": "zygionL-zygionR trichion-menton", "temple-w": "templeL-templeR zygionL-zygionR", "jaw-w": "gonionL-gonionR zygionL-zygionR", "wide-h": "zygionL-zygionR trichion-menton",
+  "third-upper": "trichion-glabella", "third-mid": "glabella-subnasale", "third-low": "subnasale-menton", "lower-mid": "glabella-subnasale subnasale-menton", "brow-face": "glabella-menton zygionL-zygionR",
+  "midface": "pupils-stomion irisL-irisR", "pupil-mouth": "pupils-stomion", "eye-gap": "eyeInnerL-eyeInnerR eyeOuterL-eyeInnerL eyeInnerR-eyeOuterR", "eye-shape-l": "eyeOuterL-eyeInnerL eyeTopL-eyeBotL",
+  "ipd-w": "irisL-irisR zygionL-zygionR", "intercanthal-face": "eyeInnerL-eyeInnerR zygionL-zygionR", "eye-face": "eyeOuterL-eyeInnerL eyeInnerR-eyeOuterR zygionL-zygionR", "canthal-l": "eyeInnerL-eyeOuterL",
+  "brow-gap-l": "browOuterL-browInnerL browL-eyeTopL", "brow-tilt-l": "browInnerL-browOuterL", "brow-len-l": "browOuterL-browInnerL eyeOuterL-eyeInnerL", "bridge-len": "nasion-pronasale",
+  "nose-canthi": "alarL-alarR eyeInnerL-eyeInnerR", "nose-face": "alarL-alarR zygionL-zygionR", "nostril-l": "nostrilTopL-nostrilLowL", "tip-shift": "nasion-pronasale nasion-menton",
+  "lip-ratio": "cupid-lipUpper lipLower-lipBot", "cupid": "cupidL-cupid cupid-cupidR mouthL-mouthR", "mouth-nose": "mouthL-mouthR alarL-alarR", "mouth-face": "mouthL-mouthR zygionL-zygionR",
+  "chin-philtrum": "subnasale-stomion stomion-menton", "corners": "mouthL-mouthR", "jaw-angle-l": "zygionL-gonionL gonionL-menton", "jaw-slope-l": "gonionL-menton",
+  "ala-jaw": "alarL-mouthL gonionL-menton alarR-mouthR gonionR-menton" };
+const linesOf = id => (LINES[id] || LINES[id.replace(/-r$/, "-l")].replace(/L(?=-| |$)/g, "R")).split(" ").map(s => s.split("-"));
+const setOf = () => Object.keys(D.set_labels).filter(s => D.set_labels[s].race === S.race && D.set_labels[s].sex === S.sex);
+const curSet = () => setOf().find(s => D.set_labels[s].source === S.src) || setOf()[0];
+const SKIN = { CM: "#EBD3C2", CF: "#F0D9CB", AM: "#E9D0B0", AF: "#EFD8BC" };
+
+function buildLab() {
+  const svg = $("#labFace");
+  if (GL.ok) { const box = el("div", { className: "v3" }); svg.style.display = "none"; svg.parentElement.prepend(box); svg.parentElement.style.padding = 0; labView = makeView3D(box, { sway: 3 });
+    labView.ov.append(labSees = sv("g", { class: "sees" })); labView.onFrame = drawSees; return; }
+  labFace = makeFace(svg);
+  labGhost = sv("g", { class: "gh-g" }); labSees = sv("g", { class: "sees" });
+  svg.append(labGhost, labSees);
+}
+let labSees;
+function drawSees(v) {
+  if (!S.sees) { labSees.replaceChildren(); return; }
+  const q = named(v.lm3), pr = p => v.proj(p), kids = [], line = (a, b, cls = "") => { const A = pr(q[a]), B = pr(q[b]); kids.push(sv("line", { class: cls, x1: A[0], y1: A[1], x2: B[0], y2: B[1] })); };
+  for (const f of D.cluster_defs.find(d => d.id === S.tab).features) if (f !== S.active) for (const [a, b] of linesOf(f)) line(a, b, "faint");
+  for (const k in D.face.points.model) { const p = pr(q[k]); kids.push(sv("circle", { cx: p[0], cy: p[1], r: 2.6 })); }
+  if (S.active) { const [[a0, b0]] = linesOf(S.active); for (const [a, b] of linesOf(S.active)) line(a, b);
+    const A = pr(q[a0]), B = pr(q[b0]), right = A[0] + B[0] >= v.w;
+    if (TILT.split(" ").includes(S.active)) kids.push(sv("line", { class: "ref", x1: A[0], y1: A[1], x2: A[0] + (B[0] >= A[0] ? 1 : -1) * 40, y2: A[1] }));
+    kids.push(sv("text", { x: (A[0] + B[0]) / 2 + (right ? 6 : -6), y: (A[1] + B[1]) / 2 - 5, "text-anchor": right ? "start" : "end" }, rawValue(S.active, actual()[S.active]))); }
+  labSees.replaceChildren(...kids);
+}
+function paintFace() {
+  const set = curSet(), P = shape(set, S.zc), P0 = shape(set, {});
+  if (labView) { labView.setColor(CLAY[S.race + S.sex], true); labView.setShape(P.map((p, i) => [p[0] - P0[i][0], p[1] - P0[i][1]])); return; }
+  const svg = $("#labFace"), ix = D.face.points.index, at = i => P0[ix.indexOf(i)];
+  svg.style.setProperty("--skin", SKIN[S.race + S.sex]);
+  labFace.update(P);
+  const gp = k => D.face.points.paths[k].map(i => P0[ix.indexOf(i)]);
+  labGhost.replaceChildren(...["oval", "browL", "browR", "eyeL", "eyeR"].map(k => sv("path", { class: "gh", d: curve(gp(k), true) })), sv("path", { class: "gh", d: curve(gp("lipOuter"), true) }), sv("path", { class: "gh", d: curve(gp("noseBase"), false) }));
+  labSees.style.opacity = S.sees ? 1 : 0;
+  if (!S.sees) { labSees.replaceChildren(); return; }
+  const q = named(P), kids = [], seen = new Set();
+  const line = (a, b, cls = "") => kids.push(sv("line", { class: cls, x1: q[a][0], y1: q[a][1], x2: q[b][0], y2: q[b][1] }));
+  const grp = D.cluster_defs.find(d => d.id === S.tab);
+  for (const f of grp.features) if (f !== S.active) for (const [a, b] of linesOf(f)) line(a, b, "faint");
+  for (const k in D.face.points.model) kids.push(sv("circle", { cx: q[k][0], cy: q[k][1], r: .85 }));
+  if (S.active) { const [[a0, b0]] = linesOf(S.active);
+    for (const [a, b] of linesOf(S.active)) line(a, b);
+    if (TILT.split(" ").includes(S.active)) { const o = q[a0], dir = q[b0][0] >= o[0] ? 1 : -1; kids.push(sv("line", { class: "ref", x1: o[0], y1: o[1], x2: o[0] + dir * 14, y2: o[1] })); }
+    const m = lerp(q[a0], q[b0], .5), val = rawValue(S.active, actual()[S.active]);
+    kids.push(sv("text", { x: m[0] + (m[0] >= 0 ? 3 : -3), y: m[1] - 2, "text-anchor": m[0] >= 0 ? "start" : "end" }, val)); }
+  labSees.replaceChildren(...kids);
+}
+function animFace() { let moving = false; for (const k in S.z) { const d = S.z[k] - (S.zc[k] || 0); if (Math.abs(d) > .004) { S.zc[k] = (S.zc[k] || 0) + d * .28; moving = true; } else S.zc[k] = S.z[k]; }
+  paintFace(); if (moving) requestAnimationFrame(animFace); }
+function actual() { const F = D.face, R = F.sets[curSet()].response, ask = F.props.map(k => S.z[k] || 0);
+  return Object.fromEntries(F.props.map((k, i) => [k, R[i].reduce((a, r, j) => a + r * ask[j], 0)])); }
+function predict() { const F = D.face, g = F.grid, za = actual(); let r = F.ridge.intercept, b = F.boosting.base;
+  for (const k of F.props) { const z = za[k]; r += F.ridge.coef[k] * z;
+    const x = Math.max(0, Math.min(g.length - 1, (z - g[0]) / (g[1] - g[0]))), i = Math.min(g.length - 2, Math.floor(x)), c = F.boosting.pd[k]; b += c[i] + (c[i + 1] - c[i]) * (x - i); }
+  for (const [id, out, raw, got] of rows) { out.textContent = sg(za[id]) + " " + t.sd; raw.textContent = rawValue(id, za[id]); got.style.left = Math.max(0, Math.min(100, (za[id] + 2) * 25)) + "%"; }
+  const q = fam => { const Q = D.sets[curSet()][fam].pred_quantiles, v = fam === "ridge" ? r : b; let i = Q.findIndex(x => x > v); if (i < 0) return 100; if (i === 0) return 0;
+    return Math.round((i - 1 + (v - Q[i - 1]) / (Q[i] - Q[i - 1] || 1)) * 5); };
+  for (const [id, v, fam] of [["Ridge", r, "ridge"], ["Boost", b, "boosting"]]) { tween($("#v" + id), v, sg);
+    $("#t" + id).replaceChildren(mark(.5, "tick"), mark(Math.max(0, Math.min(1, (v + 2) / 4)), "dot")); $("#p" + id).textContent = t.pct(q(fam)); } }
+let rows = [];
+function rawValue(id, z) { const [m, s] = D.face.sets[curSet()].stats[id], v = m + z * s;
+  return KIND.pct.split(" ").includes(id) ? v.toFixed(1) + "%" : KIND.deg.split(" ").includes(id) ? v.toFixed(1) + "°" : v.toFixed(3); }
+function drawFace() {
+  seg("race", S.race, v => { S.race = v; drawFace(); }); seg("sex", S.sex, v => { S.sex = v; drawFace(); });
+  const opts = setOf(), cur = curSet(); S.src = D.set_labels[cur].source;
+  $("#src").replaceChildren(...opts.map(s => el("button", { textContent: D.set_labels[s].source }))); $("#src").style.display = opts.length > 1 ? "" : "none";
+  [...$("#src").children].forEach((b, i) => { b.dataset.v = D.set_labels[opts[i]].source; }); seg("src", S.src, v => { S.src = v; drawFace(); });
+  $("#sees").setAttribute("aria-pressed", S.sees); $("#sees").onclick = () => { S.sees = !S.sees; $("#sees").setAttribute("aria-pressed", S.sees); paintFace(); };
+  const geo = D.cluster_defs.filter(d => d.kind === "geometry");
+  $("#slTabs").replaceChildren(...geo.map(d => { const moved = d.features.some(f => S.z[f]);
+    const b = el("button", { textContent: name(d) + (moved ? " •" : ""), onclick: () => { S.tab = d.id; S.active = null; drawFace(); } }); b.setAttribute("aria-pressed", d.id === S.tab); return b; }));
+  rows = [];
+  $("#sliders").replaceChildren(...geo.find(d => d.id === S.tab).features.map(id => { const out = el("span", { className: "num" }), raw = el("small", {}), got = el("i", { className: "got" });
+    const inp = el("input", { type: "range", min: -D.face.range, max: D.face.range, step: .1, value: S.z[id] || 0 });
+    const on = () => { S.active = id; paintFace(); }, off = () => { S.active = null; paintFace(); };
+    inp.oninput = () => { S.z[id] = +inp.value; S.active = id; predict(); animFace(); };
+    inp.onchange = () => drawFace();
+    rows.push([id, out, raw, got]);
+    const box = el("label", { className: "sl" }, el("span", {}, name(D.feature_labels[id]), " ", raw), out, el("div", { className: "rng" }, inp, got)); box.onpointerenter = on; box.onpointerleave = off; inp.onfocus = on; inp.onblur = off; return box; }));
+  $("#reset").onclick = () => { S.z = {}; S.zc = {}; drawFace(); };
+  predict(); animFace();
+}
+
+/* hero: the six set averages, one after another */
+function hero3D() { const sets = Object.keys(D.set_labels), svg = $("#heroFace"), box = el("div", { className: "v3" }); let i = 0;
+  svg.style.display = "none"; svg.parentElement.prepend(box); heroView = makeView3D(box, { sway: 7 });
+  const cap = () => { const l = D.set_labels[sets[i]]; $("#heroCap").textContent = name(l); heroView.setColor(CLAY[l.race + l.sex], true); }; cap(); window.heroLabel = cap;
+  heroTimer = setInterval(() => { i = (i + 1) % sets.length; cap(); }, 4600); }
+function hero() { if (GL.ok) return hero3D(); const sets = Object.keys(D.set_labels), svg = $("#heroFace"), F = makeFace(svg); let i = 0, from = shape(sets[0], {}), t0 = 0;
+  const skin = () => svg.style.setProperty("--skin", SKIN[D.set_labels[sets[i]].race + D.set_labels[sets[i]].sex]);
+  const show = P => F.update(P), cap = () => { $("#heroCap").textContent = name(D.set_labels[sets[i]]); skin(); };
+  show(from); cap(); window.heroLabel = cap;
+  if (matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  heroTimer = setInterval(() => { const a = from, b = shape(sets[i = (i + 1) % sets.length], {}); cap(); t0 = performance.now();
+    const step = now => { const k = Math.min(1, (now - t0) / 1200), e = k * k * (3 - 2 * k); from = a.map((p, j) => [p[0] + (b[j][0] - p[0]) * e, p[1] + (b[j][1] - p[1]) * e]); show(from); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step); }, 4600); }
+
+/* ---------- 05 ceiling, 06 lockbox, static bits ---------- */
+function drawCeiling() {
+  $("#ceilScut").replaceChildren(...Object.entries(D.ceiling_scut).map(([s, c]) => { const m = D.sets[s].boosting;
+    return row(name(D.set_labels[s]), [band(c.one_judge_range[0], c.one_judge_range[1], "alt"), band(m.ci[0], m.ci[1]), mark(m.r), mark(c.ceiling, "tick")], f2(m.r)); }));
+  const M = D.mebeauty, line = (label, g) => row(label, [g.indomain.length ? band(g.indomain[1], g.indomain[2]) : null, band(g.transfer[1], g.transfer[2]), mark(g.capture, "dot small"), mark(g.indomain[0] ?? g.indomain, "dot ring"),
+    mark(g.age, "dot alt"), mark(g.transfer[0]), g.ceiling ? mark(g.ceiling, "tick") : null].filter(Boolean), f2(g.transfer[0]));
+  const mean = M.mean_of_four;
+  $("#ceilMeb").replaceChildren(...M.groups.map(g => line(name(g), { indomain: g.indomain, transfer: g.transfer, age: g.given_age, capture: Math.max(g.capture_only, 0), ceiling: g.ceiling })),
+    line(el("b", {}, t.mean4), { indomain: mean.indomain, transfer: mean.transfer, age: mean.given_age[0], capture: Math.max(mean.capture_only[0], 0) }));
+}
+function drawLock() { const K = D.lockbox, sc = K.scut, res = sc.result, H = D.heldout, mb = K.mebeauty_B;
+  $("#env").dataset.open = true;
+  $("#lockMeta").textContent = t.opened + " · " + t.lockMeta(K.frozen, H.faces_six); $("#lockTitle").textContent = t.lockTitle;
+  const exp = Object.values(sc.expected_tier2_boosting), expm = exp.reduce((a, b) => a + b) / exp.length;
+  $("#cardCap").textContent = t.card_cap; $("#cardNum").textContent = f2(H.mean_r);
+  $("#cardSub").textContent = (H.mean_r >= sc.downgrade_below_mean ? t.card_in : t.card_out)(f2(sc.downgrade_below_mean));
+  const slot = (label, lo, hi, dev, r) => { const kids = [band(lo, hi, "hatch")]; if (dev != null) kids.push(mark(dev, "dot small"));
+    if (r.length > 1) kids.push(band(r[1], r[2])); kids.push(mark(r[0], "dot"));
+    const out = r[0] > hi ? 1 : r[0] < lo ? -1 : 0, e = row(label, kids, f2(r[0]) + (out > 0 ? " ↑" : out < 0 ? " ↓" : "")); if (out) e.classList.add("out"); return e; };
+  $("#lockRows").replaceChildren(...Object.keys(D.set_labels).map(s => [s, sc.expected_tier2_boosting[s]]).map(([s, e]) => slot(name(D.set_labels[s]), e - sc.band, e + sc.band, D.sets[s].boosting.r, res[s])),
+    slot(el("b", {}, t.meb_a), ...mb.expected_A_mean_of_four, null, [mb.result.A_mean_of_four]),
+    slot(el("b", {}, t.meb_b), ...mb.expected_mean_of_four, null, [mb.result.B_mean_of_four]));
+}
+function drawChecks() {
+  $("#checks").replaceChildren(...D.heldout.checks.map(c => el("div", { className: "chk " + c.verdict }, el("span", { className: "vd" }, t["v_" + c.verdict]),
+    el("p", {}, el("b", {}, t.w_lab), name(c.written)), el("p", {}, el("b", {}, t.r_lab), name(c.result)))));
+}
+const LM_SETS = ["CM 10k_US", "AM DataTang", "AM internet", "CF 10k_US", "AF internet", "AF DataTang"], sgn = (x, d = 2) => (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toFixed(d);
+function lmChart(c) {
+  const sym = c.id === "C10", lo = sym ? -.04 : -.7, hi = sym ? .04 : .8, th = sym ? .01 : .15, W = 230, rh = 12, gap = 8, H = 6 * rh + gap + 4, d = sym ? 3 : 2;
+  const X = r => 6 + (Math.max(lo, Math.min(hi, r)) - lo) / (hi - lo) * (W - 12), svg = sv("svg", { class: "lmc", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": name(c.text) });
+  svg.append(sv("line", { class: "th", x1: X(-th), x2: X(-th), y1: 0, y2: H }), sv("line", { class: "th", x1: X(th), x2: X(th), y1: 0, y2: H }), sv("line", { class: "z", x1: X(0), x2: X(0), y1: 0, y2: H }));
+  LM_SETS.forEach((s, i) => { const r = c.sets[s]; if (!r) return; const y = 8 + i * rh + (i > 2 ? gap : 0);
+    svg.append(sv("g", {}, sv("title", {}, `${name(D.set_labels[s])}: ${sgn(r[0], d)} [${sgn(r[1], d)}, ${sgn(r[2], d)}]`), sv("line", { class: "ci", x1: X(r[1]), x2: X(r[2]), y1: y, y2: y }), sv("circle", { cx: X(r[0]), cy: y, r: 3 }))); });
+  return svg;
+}
+function lmCard(c) { const sym = c.id === "C10", d = sym ? 3 : 2,
+    mean = c.mean != null ? `${sym ? t.lm_gain : t.lm_mean} ${sgn(c.mean, d)}` : `${t.men} ${sgn(c.mean_m)} · ${t.women} ${sgn(c.mean_f)}`;
+  return el("article", { className: "lm " + c.verdict }, el("div", { className: "lmt" }, el("span", { className: "lid" }, c.id), el("div", {}, el("b", {}, name(c.text)), el("small", {}, name(c.measure)))),
+    el("div", { className: "lmv" }, el("span", { className: "vc " + c.verdict }, t.lmv[c.verdict]), el("span", { className: "num" }, mean)), lmChart(c)); }
+function drawClaims() { const C = D.heldout.claims, pick = (g, v) => C.filter(c => c.group === g && c.verdict === v), jaw = ["C02", "C14", "C13", "C15"],
+    grp = (h, list, p) => el("div", { className: "lmgroup" }, el("h3", {}, h), p ? el("p", {}, p) : null, ...list.map(lmCard));
+  $("#lmKey").replaceChildren(el("p", {}, t.lm_key));
+  $("#lm").replaceChildren(grp(t.lm_h_sup, pick("free", "supported")), grp(t.lm_h_con, pick("free", "contradicted")),
+    grp(t.lm_h_jaw, jaw.map(id => C.find(c => c.id === id)), t.lm_jaw_p), grp(t.lm_h_ind, pick("free", "indistinct")), grp(t.lm_h_sym, pick("sym", "no_gain"), t.lm_sym_p));
+}
+function drawStatic() {
+  document.documentElement.lang = S.lang; document.title = t.h1.replace(/<[^>]+>/g, ""); $("#theme").setAttribute("aria-label", t.theme);
+  for (const n of document.querySelectorAll("[data-t]")) n.innerHTML = t[n.dataset.t];
+  seg("lang", S.lang, v => { S.lang = v; store.set("lang", v); render(); });
+  drawLadder();
+  $("#claimList").replaceChildren(...D.not_claimed.map(c => el("li", {}, name(c))));
+  document.querySelectorAll("[data-k]").forEach(stkFill);
+  $("#stkKey").replaceChildren(...["conf", "exp", "dev"].map(k => el("span", {}, stkEl(k), t.stat_long[k])));
+  $("#foot").textContent = t.foot(D.meta.built, D.meta.n);
+}
+function render() { t = L[S.lang]; document.querySelector('[data-t="paper_link"]').href = `../manuscript/${S.lang}/face_attractiveness_${S.lang}.pdf`; drawStatic(); drawRemove(); drawSets(); drawClusters(); drawFace(); drawCeiling(); drawLock(); drawChecks(); drawClaims(); window.heroLabel?.(); }
+
+async function load() {
+  if (location.protocol !== "file:") try { return await (await fetch("data.json", { cache: "no-store" })).json(); } catch {}
+  await new Promise((ok, no) => document.head.append(el("script", { src: "data.js", onload: ok, onerror: no })));
+  return window.DATA;
+}
+const loadScript = src => new Promise(ok => document.head.append(el("script", { src, onload: () => ok(true), onerror: () => ok(false) })));
+load().then(async d => { D = d; t = L[S.lang];
+  const got = await Promise.all([loadScript("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"), loadScript("assets/head.js")]);
+  if (got.every(Boolean) && window.THREE && window.HEAD) try { HD = initHead(); glStart(); } catch (e) { GL.ok = false; console.warn("3D head unavailable:", e); }
+  buildStage(); buildLab(); render(); hero();
+  addEventListener("hashchange", drawLock);
+  $("#theme").onclick = () => { const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme:dark)").matches; r.dataset.theme = dark ? "light" : "dark"; };
+  $("#claims button").onclick = () => $("#claims").classList.toggle("open");
+});
+</script>
+</body>
+</html>

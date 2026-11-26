@@ -1,0 +1,113 @@
+S: lockbox faces in the six sets 1246 (twins 50); excluded as degenerate: []
+
+=== H1  r inside each set (face bootstrap 1000), and predictive R2 (1 - SSE/SST on the z scale). Band 0.40-0.70 applies to geometry; judged per set on the point estimate (FREEZE v1.4), no overall word.
+
+PRIMARY (without twins)
+  tier2    boosting CM 10k_US n 148 r 0.576 [+0.449, +0.686] R2 +0.331; AM DataTang n 328 r 0.620 [+0.553, +0.681] R2 +0.374; AM internet n 145 r 0.809 [+0.747, +0.859] R2 +0.648; CF 10k_US n 124 r 0.671 [+0.571, +0.759] R2 +0.427; AF internet n 246 r 0.685 [+0.588, +0.762] R2 +0.465; AF DataTang n 205 r 0.707 [+0.637, +0.765] R2 +0.496 | pooled (display only) 0.672
+  tier2    ridge    CM 10k_US n 148 r 0.620 [+0.528, +0.708] R2 +0.377; AM DataTang n 328 r 0.641 [+0.581, +0.694] R2 +0.404; AM internet n 145 r 0.803 [+0.742, +0.852] R2 +0.639; CF 10k_US n 124 r 0.612 [+0.481, +0.718] R2 +0.369; AF internet n 246 r 0.650 [+0.544, +0.730] R2 +0.371; AF DataTang n 205 r 0.735 [+0.660, +0.801] R2 +0.540 | pooled (display only) 0.672
+  geometry boosting CM 10k_US n 148 r 0.549 [+0.432, +0.644] R2 +0.298; AM DataTang n 328 r 0.618 [+0.549, +0.685] R2 +0.367; AM internet n 145 r 0.798 [+0.734, +0.848] R2 +0.628; CF 10k_US n 124 r 0.590 [+0.456, +0.700] R2 +0.339; AF internet n 246 r 0.653 [+0.550, +0.742] R2 +0.426; AF DataTang n 205 r 0.649 [+0.561, +0.728] R2 +0.418 | pooled (display only) 0.643
+  geometry ridge    CM 10k_US n 148 r 0.528 [+0.414, +0.624] R2 +0.269; AM DataTang n 328 r 0.632 [+0.557, +0.695] R2 +0.381; AM internet n 145 r 0.780 [+0.715, +0.835] R2 +0.592; CF 10k_US n 124 r 0.512 [+0.366, +0.631] R2 +0.245; AF internet n 246 r 0.556 [+0.424, +0.664] R2 +0.275; AF DataTang n 205 r 0.665 [+0.583, +0.737] R2 +0.440 | pooled (display only) 0.614
+
+SECONDARY (all lockbox faces)
+  tier2    boosting CM 10k_US n 150 r 0.581 [+0.456, +0.689] R2 +0.335; AM DataTang n 336 r 0.619 [+0.554, +0.682] R2 +0.374; AM internet n 162 r 0.765 [+0.687, +0.828] R2 +0.584; CF 10k_US n 126 r 0.670 [+0.560, +0.754] R2 +0.428; AF internet n 262 r 0.688 [+0.600, +0.763] R2 +0.469; AF DataTang n 210 r 0.694 [+0.629, +0.752] R2 +0.480 | pooled (display only) 0.664
+  tier2    ridge    CM 10k_US n 150 r 0.616 [+0.526, +0.699] R2 +0.369; AM DataTang n 336 r 0.637 [+0.578, +0.691] R2 +0.401; AM internet n 162 r 0.756 [+0.683, +0.813] R2 +0.571; CF 10k_US n 126 r 0.613 [+0.496, +0.723] R2 +0.370; AF internet n 262 r 0.653 [+0.552, +0.737] R2 +0.377; AF DataTang n 210 r 0.728 [+0.654, +0.796] R2 +0.529 | pooled (display only) 0.663
+  geometry boosting CM 10k_US n 150 r 0.557 [+0.437, +0.657] R2 +0.305; AM DataTang n 336 r 0.620 [+0.549, +0.684] R2 +0.372; AM internet n 162 r 0.745 [+0.658, +0.817] R2 +0.555; CF 10k_US n 126 r 0.589 [+0.462, +0.696] R2 +0.339; AF internet n 262 r 0.655 [+0.553, +0.728] R2 +0.428; AF DataTang n 210 r 0.629 [+0.532, +0.710] R2 +0.395 | pooled (display only) 0.635
+  geometry ridge    CM 10k_US n 150 r 0.537 [+0.436, +0.624] R2 +0.277; AM DataTang n 336 r 0.629 [+0.559, +0.688] R2 +0.380; AM internet n 162 r 0.725 [+0.637, +0.794] R2 +0.522; CF 10k_US n 126 r 0.512 [+0.366, +0.645] R2 +0.245; AF internet n 262 r 0.556 [+0.427, +0.658] R2 +0.273; AF DataTang n 210 r 0.657 [+0.574, +0.730] R2 +0.430 | pooled (display only) 0.606
+
+H1 count, geometry, PRIMARY, point estimates vs band 0.40-0.70: boosting: 5 inside, 1 above, 0 below; ridge: 5 inside, 1 above, 0 below
+
+=== H2  model r with the mean of the other 59 judges minus single judge r with the same mean (boosting tier 2; mean over 60 judges; paired bootstrap)
+  PRIMARY   CM 10k_US    n 148: model 0.576, single judge 0.585, difference -0.009 [-0.117, +0.093]
+  PRIMARY   AM DataTang  n 328: model 0.619, single judge 0.607, difference +0.012 [-0.060, +0.093]
+  PRIMARY   AM internet  n 145: model 0.809, single judge 0.782, difference +0.027 [-0.034, +0.076]
+  PRIMARY   CF 10k_US    n 124: model 0.671, single judge 0.645, difference +0.026 [-0.051, +0.096]
+  PRIMARY   AF internet  n 246: model 0.685, single judge 0.715, difference -0.030 [-0.111, +0.032]
+  PRIMARY   AF DataTang  n 205: model 0.707, single judge 0.683, difference +0.023 [-0.038, +0.089]
+  SECONDARY CM 10k_US    n 150: model 0.581, single judge 0.589, difference -0.009 [-0.113, +0.081]
+  SECONDARY AM DataTang  n 336: model 0.619, single judge 0.607, difference +0.012 [-0.065, +0.096]
+  SECONDARY AM internet  n 162: model 0.765, single judge 0.775, difference -0.010 [-0.081, +0.053]
+  SECONDARY CF 10k_US    n 126: model 0.670, single judge 0.644, difference +0.026 [-0.057, +0.100]
+  SECONDARY AF internet  n 262: model 0.688, single judge 0.715, difference -0.027 [-0.103, +0.027]
+  SECONDARY AF DataTang  n 210: model 0.694, single judge 0.681, difference +0.013 [-0.056, +0.078]
+H2 count (interval above 0; 'supported overall' needs at least 4 of 6, FREEZE v1.4): PRIMARY 0 of 6; SECONDARY 0 of 6
+
+=== H3  size-matched training pools, boosting tier 2 (population gap = own set minus other population; sex gap = own set minus same population other sex)
+  PRIMARY   CM 10k_US    n 148, pool 380: own 0.639, other pop 0.595, other sex 0.554; population gap +0.044 [-0.019, +0.102]; sex gap +0.085 [-0.005, +0.169]
+  PRIMARY   AM DataTang  n 328, pool 828: own 0.615, other pop 0.555, other sex 0.562; population gap +0.060 [-0.034, +0.151]; sex gap +0.052 [-0.031, +0.131]
+  PRIMARY   AM internet  n 145, pool 488: own 0.794, other pop 0.803, other sex 0.769; population gap -0.009 [-0.059, +0.041]; sex gap +0.025 [-0.014, +0.067]
+  PRIMARY   CF 10k_US    n 124, pool 380: own 0.577, other pop 0.602, other sex 0.620; population gap -0.025 [-0.111, +0.055]; sex gap -0.043 [-0.150, +0.070]
+  PRIMARY   AF internet  n 246, pool 783: own 0.690, other pop 0.534, other sex 0.629; population gap +0.156 [+0.087, +0.225]; sex gap +0.061 [+0.008, +0.120]
+  PRIMARY   AF DataTang  n 205, pool 632: own 0.735, other pop 0.639, other sex 0.658; population gap +0.096 [+0.031, +0.165]; sex gap +0.077 [+0.015, +0.139]
+  SECONDARY CM 10k_US    n 150, pool 380: own 0.637, other pop 0.588, other sex 0.564; population gap +0.049 [-0.016, +0.106]; sex gap +0.073 [+0.001, +0.161]
+  SECONDARY AM DataTang  n 336, pool 828: own 0.624, other pop 0.555, other sex 0.542; population gap +0.069 [-0.025, +0.161]; sex gap +0.082 [+0.000, +0.159]
+  SECONDARY AM internet  n 162, pool 488: own 0.771, other pop 0.761, other sex 0.717; population gap +0.010 [-0.037, +0.060]; sex gap +0.054 [-0.005, +0.122]
+  SECONDARY CF 10k_US    n 126, pool 380: own 0.577, other pop 0.588, other sex 0.603; population gap -0.011 [-0.102, +0.069]; sex gap -0.026 [-0.141, +0.083]
+  SECONDARY AF internet  n 262, pool 783: own 0.700, other pop 0.532, other sex 0.631; population gap +0.168 [+0.098, +0.239]; sex gap +0.069 [+0.019, +0.126]
+  SECONDARY AF DataTang  n 210, pool 632: own 0.729, other pop 0.638, other sex 0.648; population gap +0.090 [+0.022, +0.156]; sex gap +0.081 [+0.010, +0.148]
+H3 count (gap >= 0.10 with the interval above 0; 'supported overall' needs at least 4 of 6): PRIMARY: population 1 of 6, sex 0 of 6; SECONDARY: population 1 of 6, sex 0 of 6
+H3 note: the 'other population' pool differs in source and sex mix as well as population (FREEZE v1.4 disclosure).
+
+=== H5  commonality inside each lockbox set (ridge; G geometry, Q capture, A age; 30 subsamples of 80 %; unique shares, mean and 2.5-97.5 percentile)
+  PRIMARY   CM 10k_US    n 148: unique G +0.235 [+0.149, +0.348], unique Q -0.014 [-0.058, +0.051], unique A +0.095 [+0.052, +0.152]
+  PRIMARY   AM DataTang  n 328: unique G +0.359 [+0.323, +0.403], unique Q +0.000 [-0.017, +0.020], unique A +0.008 [-0.003, +0.019]
+  PRIMARY   AM internet  n 145: unique G +0.357 [+0.265, +0.424], unique Q +0.020 [-0.012, +0.061], unique A -0.003 [-0.014, +0.011]
+  PRIMARY   CF 10k_US    n 124: unique G +0.053 [-0.085, +0.171], unique Q -0.056 [-0.118, +0.008], unique A +0.039 [-0.010, +0.089]
+  PRIMARY   AF internet  n 246: unique G +0.176 [+0.120, +0.240], unique Q +0.051 [+0.020, +0.085], unique A +0.008 [-0.004, +0.017]
+  PRIMARY   AF DataTang  n 205: unique G +0.378 [+0.313, +0.452], unique Q +0.036 [-0.003, +0.079], unique A +0.008 [-0.004, +0.018]
+  SECONDARY CM 10k_US    n 150: unique G +0.267 [+0.185, +0.342], unique Q -0.012 [-0.061, +0.023], unique A +0.104 [+0.055, +0.173]
+  SECONDARY AM DataTang  n 336: unique G +0.361 [+0.296, +0.410], unique Q -0.002 [-0.024, +0.023], unique A +0.012 [+0.001, +0.023]
+  SECONDARY AM internet  n 162: unique G +0.298 [+0.212, +0.379], unique Q +0.024 [-0.004, +0.064], unique A -0.003 [-0.012, +0.009]
+  SECONDARY CF 10k_US    n 126: unique G +0.057 [-0.091, +0.185], unique Q -0.056 [-0.109, -0.017], unique A +0.041 [+0.003, +0.082]
+  SECONDARY AF internet  n 262: unique G +0.158 [+0.093, +0.206], unique Q +0.056 [+0.032, +0.085], unique A +0.008 [-0.004, +0.023]
+  SECONDARY AF DataTang  n 210: unique G +0.359 [+0.302, +0.435], unique Q +0.040 [+0.009, +0.084], unique A +0.017 [-0.001, +0.051]
+H5 is descriptive: no verdict (FREEZE v1.4).
+
+=== L  lookmaxxing claims (FREEZE v1.3): per-face measure vs judges' z inside each set; Spearman, face bootstrap 1000; sign-adjusted so that + means 'the claim holds'
+
+PRIMARY (without twins)
+  C01   longer chin relative to the upper lip (short philtrum): CM 10k_US -0.01 [-0.16, +0.15]; AM DataTang +0.09 [-0.02, +0.19]; AM internet +0.29 [+0.13, +0.44]; CF 10k_US +0.03 [-0.15, +0.21]; AF internet +0.21 [+0.08, +0.33]; AF DataTang +0.15 [+0.03, +0.28] | mean +0.129 -> not distinguishable
+  C02   cheekbones wide relative to the jaw: CM 10k_US +0.32 [+0.17, +0.46]; AM DataTang +0.15 [+0.03, +0.27]; AM internet +0.34 [+0.17, +0.49]; CF 10k_US +0.44 [+0.27, +0.57]; AF internet +0.22 [+0.10, +0.33]; AF DataTang +0.41 [+0.29, +0.53] | mean +0.314 -> SUPPORTED
+  C03   positive canthal tilt (mean of both eyes): CM 10k_US +0.20 [+0.04, +0.34]; AM DataTang +0.11 [+0.00, +0.22]; AM internet +0.39 [+0.22, +0.54]; CF 10k_US +0.37 [+0.19, +0.51]; AF internet +0.10 [-0.02, +0.23]; AF DataTang +0.22 [+0.07, +0.35] | mean +0.229 -> SUPPORTED
+  C04   eyes set closer together (gap between the eyes to eye width): CM 10k_US +0.25 [+0.08, +0.40]; AM DataTang +0.31 [+0.19, +0.40]; AM internet +0.48 [+0.35, +0.59]; CF 10k_US +0.19 [+0.02, +0.35]; AF internet +0.25 [+0.12, +0.36]; AF DataTang +0.32 [+0.20, +0.44] | mean +0.299 -> SUPPORTED
+  C05   less white visible below the iris: CM 10k_US -0.27 [-0.41, -0.11]; AM DataTang -0.30 [-0.40, -0.20]; AM internet -0.29 [-0.44, -0.11]; CF 10k_US -0.34 [-0.51, -0.17]; AF internet -0.07 [-0.19, +0.05]; AF DataTang -0.28 [-0.40, -0.14] | mean -0.258 -> CONTRADICTED
+  C06   wider face relative to its height: CM 10k_US -0.21 [-0.36, -0.04]; AM DataTang -0.18 [-0.29, -0.07]; AM internet -0.14 [-0.29, +0.04]; CF 10k_US -0.12 [-0.29, +0.06]; AF internet -0.12 [-0.24, +0.02]; AF DataTang -0.27 [-0.39, -0.15] | mean -0.173 -> not distinguishable
+  C07   closer to equal vertical thirds: CM 10k_US +0.04 [-0.11, +0.21]; AM DataTang +0.16 [+0.07, +0.27]; AM internet +0.23 [+0.07, +0.38]; CF 10k_US +0.17 [-0.01, +0.33]; AF internet +0.13 [-0.00, +0.25]; AF DataTang +0.19 [+0.03, +0.33] | mean +0.152 -> not distinguishable
+  C08   lower-set brows (small brow-to-lid gap): CM 10k_US +0.28 [+0.11, +0.42]; AM DataTang +0.36 [+0.25, +0.46]; AM internet +0.65 [+0.53, +0.74]; CF 10k_US +0.32 [+0.14, +0.47]; AF internet +0.26 [+0.14, +0.38]; AF DataTang +0.34 [+0.21, +0.46] | mean +0.367 -> SUPPORTED
+  C09   thick and dense brows: CM 10k_US +0.29 [+0.14, +0.44]; AM DataTang +0.09 [-0.02, +0.19]; AM internet +0.22 [+0.05, +0.38]; CF 10k_US +0.14 [-0.03, +0.32]; AF internet +0.17 [+0.04, +0.30]; AF DataTang +0.03 [-0.11, +0.17] | mean +0.157 -> not distinguishable
+  C11   masculine face rated higher (men): CM 10k_US -0.23 [-0.39, -0.07]; AM DataTang -0.29 [-0.38, -0.18]; AM internet -0.14 [-0.31, +0.04] | mean -0.221 -> CONTRADICTED
+  C12   feminine face rated higher (women): CF 10k_US +0.35 [+0.17, +0.51]; AF internet +0.08 [-0.07, +0.21]; AF DataTang +0.22 [+0.07, +0.35] | mean +0.216 -> SUPPORTED
+  C13M  sharper jaw corner (men): CM 10k_US -0.34 [-0.48, -0.19]; AM DataTang -0.11 [-0.21, -0.00]; AM internet -0.49 [-0.63, -0.34] | mean -0.315 -> CONTRADICTED
+  C13F  sharper jaw corner (women): CF 10k_US -0.29 [-0.45, -0.10]; AF internet -0.24 [-0.36, -0.13]; AF DataTang -0.35 [-0.46, -0.23] | mean -0.291 -> CONTRADICTED
+  C14M  tapering (less round) face outline: higher perimeter^2/area (men): CM 10k_US +0.51 [+0.36, +0.62]; AM DataTang +0.20 [+0.09, +0.31]; AM internet +0.58 [+0.45, +0.69] | mean +0.430 -> SUPPORTED
+  C14F  tapering (less round) face outline: higher perimeter^2/area (women): CF 10k_US +0.45 [+0.29, +0.59]; AF internet +0.26 [+0.14, +0.37]; AF DataTang +0.43 [+0.30, +0.55] | mean +0.376 -> SUPPORTED
+  C15M  wider jaw relative to the face (men): CM 10k_US -0.21 [-0.35, -0.06]; AM DataTang -0.29 [-0.39, -0.18]; AM internet -0.33 [-0.48, -0.17] | mean -0.278 -> CONTRADICTED
+  C15F  wider jaw relative to the face (women): CF 10k_US -0.29 [-0.47, -0.12]; AF internet -0.21 [-0.32, -0.09]; AF DataTang -0.44 [-0.55, -0.32] | mean -0.313 -> CONTRADICTED
+  C10   symmetry: gain in r over tier 2, ridge (primary model of C10): CM 10k_US -0.003 [-0.022, +0.014]; AM DataTang +0.002 [-0.020, +0.023]; AM internet +0.013 [+0.002, +0.023]; CF 10k_US +0.009 [-0.005, +0.022]; AF internet +0.008 [-0.002, +0.020]; AF DataTang -0.007 [-0.023, +0.007] | mean +0.0037 -> not supported
+        symmetry gain, boosting (secondary, no verdict): CM 10k_US +0.006 [-0.008, +0.020]; AM DataTang +0.014 [-0.005, +0.035]; AM internet +0.003 [-0.004, +0.011]; CF 10k_US -0.003 [-0.019, +0.013]; AF internet -0.008 [-0.018, +0.003]; AF DataTang +0.004 [-0.012, +0.018]
+
+SECONDARY (all lockbox faces)
+  C01   longer chin relative to the upper lip (short philtrum): CM 10k_US +0.02 [-0.16, +0.18]; AM DataTang +0.11 [-0.01, +0.22]; AM internet +0.24 [+0.08, +0.39]; CF 10k_US +0.05 [-0.13, +0.22]; AF internet +0.20 [+0.08, +0.31]; AF DataTang +0.15 [+0.01, +0.28] | mean +0.128 -> not distinguishable
+  C02   cheekbones wide relative to the jaw: CM 10k_US +0.32 [+0.16, +0.46]; AM DataTang +0.14 [+0.03, +0.25]; AM internet +0.35 [+0.20, +0.49]; CF 10k_US +0.42 [+0.26, +0.57]; AF internet +0.24 [+0.12, +0.35]; AF DataTang +0.41 [+0.29, +0.52] | mean +0.316 -> SUPPORTED
+  C03   positive canthal tilt (mean of both eyes): CM 10k_US +0.21 [+0.06, +0.36]; AM DataTang +0.12 [+0.01, +0.22]; AM internet +0.34 [+0.17, +0.49]; CF 10k_US +0.37 [+0.21, +0.52]; AF internet +0.10 [-0.02, +0.21]; AF DataTang +0.21 [+0.07, +0.33] | mean +0.226 -> SUPPORTED
+  C04   eyes set closer together (gap between the eyes to eye width): CM 10k_US +0.24 [+0.08, +0.39]; AM DataTang +0.31 [+0.21, +0.41]; AM internet +0.44 [+0.31, +0.55]; CF 10k_US +0.20 [+0.03, +0.36]; AF internet +0.25 [+0.14, +0.38]; AF DataTang +0.30 [+0.17, +0.43] | mean +0.292 -> SUPPORTED
+  C05   less white visible below the iris: CM 10k_US -0.26 [-0.40, -0.09]; AM DataTang -0.31 [-0.40, -0.21]; AM internet -0.25 [-0.40, -0.08]; CF 10k_US -0.34 [-0.49, -0.16]; AF internet -0.07 [-0.19, +0.06]; AF DataTang -0.28 [-0.41, -0.15] | mean -0.249 -> CONTRADICTED
+  C06   wider face relative to its height: CM 10k_US -0.22 [-0.38, -0.05]; AM DataTang -0.17 [-0.28, -0.07]; AM internet -0.14 [-0.31, +0.01]; CF 10k_US -0.12 [-0.28, +0.06]; AF internet -0.15 [-0.27, -0.03]; AF DataTang -0.28 [-0.41, -0.15] | mean -0.180 -> CONTRADICTED
+  C07   closer to equal vertical thirds: CM 10k_US +0.06 [-0.10, +0.22]; AM DataTang +0.18 [+0.07, +0.28]; AM internet +0.21 [+0.05, +0.35]; CF 10k_US +0.17 [-0.02, +0.33]; AF internet +0.15 [+0.04, +0.27]; AF DataTang +0.20 [+0.07, +0.32] | mean +0.160 -> SUPPORTED
+  C08   lower-set brows (small brow-to-lid gap): CM 10k_US +0.30 [+0.14, +0.43]; AM DataTang +0.37 [+0.27, +0.47]; AM internet +0.57 [+0.43, +0.68]; CF 10k_US +0.32 [+0.14, +0.48]; AF internet +0.26 [+0.14, +0.37]; AF DataTang +0.32 [+0.19, +0.43] | mean +0.355 -> SUPPORTED
+  C09   thick and dense brows: CM 10k_US +0.28 [+0.12, +0.42]; AM DataTang +0.08 [-0.03, +0.19]; AM internet +0.23 [+0.08, +0.38]; CF 10k_US +0.15 [-0.04, +0.32]; AF internet +0.17 [+0.06, +0.28]; AF DataTang +0.02 [-0.12, +0.16] | mean +0.155 -> not distinguishable
+  C11   masculine face rated higher (men): CM 10k_US -0.23 [-0.38, -0.06]; AM DataTang -0.27 [-0.38, -0.16]; AM internet -0.15 [-0.30, -0.00] | mean -0.215 -> CONTRADICTED
+  C12   feminine face rated higher (women): CF 10k_US +0.34 [+0.15, +0.49]; AF internet +0.09 [-0.03, +0.21]; AF DataTang +0.23 [+0.09, +0.36] | mean +0.218 -> SUPPORTED
+  C13M  sharper jaw corner (men): CM 10k_US -0.36 [-0.50, -0.21]; AM DataTang -0.11 [-0.22, +0.00]; AM internet -0.48 [-0.60, -0.33] | mean -0.314 -> CONTRADICTED
+  C13F  sharper jaw corner (women): CF 10k_US -0.29 [-0.46, -0.10]; AF internet -0.23 [-0.34, -0.12]; AF DataTang -0.32 [-0.43, -0.20] | mean -0.281 -> CONTRADICTED
+  C14M  tapering (less round) face outline: higher perimeter^2/area (men): CM 10k_US +0.52 [+0.39, +0.63]; AM DataTang +0.19 [+0.07, +0.30]; AM internet +0.56 [+0.43, +0.67] | mean +0.424 -> SUPPORTED
+  C14F  tapering (less round) face outline: higher perimeter^2/area (women): CF 10k_US +0.44 [+0.27, +0.58]; AF internet +0.27 [+0.15, +0.37]; AF DataTang +0.42 [+0.30, +0.53] | mean +0.375 -> SUPPORTED
+  C15M  wider jaw relative to the face (men): CM 10k_US -0.21 [-0.36, -0.04]; AM DataTang -0.29 [-0.39, -0.18]; AM internet -0.32 [-0.47, -0.17] | mean -0.272 -> CONTRADICTED
+  C15F  wider jaw relative to the face (women): CF 10k_US -0.29 [-0.45, -0.11]; AF internet -0.22 [-0.33, -0.10]; AF DataTang -0.44 [-0.55, -0.32] | mean -0.316 -> CONTRADICTED
+  C10   symmetry: gain in r over tier 2, ridge (primary model of C10): CM 10k_US -0.003 [-0.019, +0.013]; AM DataTang +0.002 [-0.018, +0.024]; AM internet +0.016 [+0.004, +0.028]; CF 10k_US +0.009 [-0.005, +0.023]; AF internet +0.008 [-0.001, +0.019]; AF DataTang -0.008 [-0.024, +0.007] | mean +0.0041 -> not supported
+        symmetry gain, boosting (secondary, no verdict): CM 10k_US +0.005 [-0.009, +0.019]; AM DataTang +0.013 [-0.005, +0.034]; AM internet +0.009 [-0.001, +0.022]; CF 10k_US -0.003 [-0.019, +0.013]; AF internet -0.008 [-0.019, +0.002]; AF DataTang +0.004 [-0.010, +0.018]
+
+L summary: PRIMARY C01 not distinguishable; PRIMARY C02 SUPPORTED; PRIMARY C03 SUPPORTED; PRIMARY C04 SUPPORTED; PRIMARY C05 CONTRADICTED; PRIMARY C06 not distinguishable; PRIMARY C07 not distinguishable; PRIMARY C08 SUPPORTED; PRIMARY C09 not distinguishable; PRIMARY C11 CONTRADICTED; PRIMARY C12 SUPPORTED; PRIMARY C13M CONTRADICTED; PRIMARY C13F CONTRADICTED; PRIMARY C14M SUPPORTED; PRIMARY C14F SUPPORTED; PRIMARY C15M CONTRADICTED; PRIMARY C15F CONTRADICTED; PRIMARY C10 not supported; SECONDARY C01 not distinguishable; SECONDARY C02 SUPPORTED; SECONDARY C03 SUPPORTED; SECONDARY C04 SUPPORTED; SECONDARY C05 CONTRADICTED; SECONDARY C06 CONTRADICTED; SECONDARY C07 SUPPORTED; SECONDARY C08 SUPPORTED; SECONDARY C09 not distinguishable; SECONDARY C11 CONTRADICTED; SECONDARY C12 SUPPORTED; SECONDARY C13M CONTRADICTED; SECONDARY C13F CONTRADICTED; SECONDARY C14M SUPPORTED; SECONDARY C14F SUPPORTED; SECONDARY C15M CONTRADICTED; SECONDARY C15F CONTRADICTED; SECONDARY C10 not supported
+L note: the jaw-related tests (C02, C13, C14, C15) describe one dimension (a tapering lower face) and are presented as one group; no count of supported claims is reported (FREEZE v1.4).
+Lockbox faces outside the six sets (no model, no report): CF internet 61, CM internet 38, AF lab 20, AF GuangZhou 8, AM lab 2
+
+done (the lockbox run S is finished; it is not repeated)
