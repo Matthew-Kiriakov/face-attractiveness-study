@@ -12,6 +12,14 @@ This study examines how scale and group composition affect the evaluation of pre
 - Saved aggregate outputs in `results/` and the manuscript directories.
 - Selected analysis and feature-definition code in `scripts/` and `js/`.
 
+## Check the reported results
+
+| Result | Where to check it |
+|---|---|
+| SCUT: pooled r rose from 0.672 to 0.824 on the same 1,196 photographs. Mean within-group r stayed at 0.678. | [Saved scale comparison](manuscript/en/scut_editorial_checks.json) and [Table 3](manuscript/en/paper_en.md#42-what-changes-pooled-correlation-on-the-same-photographs) |
+| SCUT: the same eight-group model yielded macro r = 0.680 over six groups and 0.585 over all eight. | [Eight-group sensitivity analysis](manuscript/en/review_sensitivity.md#scut--sensitivity-to-two-excluded-groups) |
+| MEBeauty: Model A beat the development-mean error benchmark with a 95% interval excluding zero in one of four groups (29 photographs). | [Error comparison with the constant fixed on folds 1–4](manuscript/en/review_sensitivity.md#mebeauty--error-against-a-constant-fixed-before-test-scoring) |
+
 ## Reproduce the synthetic example
 
 From this directory, run:
